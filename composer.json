@@ -1,0 +1,51 @@
+{
+    "name": "crumbls/helpdesk",
+    "description": "HelpDesk Package for Laravel.",
+    "keywords": [
+        "Crumbls",
+        "Settings",
+        "Laravel"
+    ],
+    "homepage": "https://github.com/crumbls/helpdesk",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Chase C. Miller",
+            "email": "chase@crumbls.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.0",
+        "laravel/framework": "^9.0|^10.0|^11.0"
+    },
+    "require-dev": {
+    },
+    "autoload": {
+        "psr-4": {
+            "Crumbls\\HelpDesk\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Crumbls\\HelpDesk\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/pest",
+        "test-coverage": "vendor/bin/pest --coverage",
+        "format": "vendor/bin/php-cs-fixer fix --allow-risky=yes"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Crumbls\\HelpDesk\\HelpDeskServiceProvider"
+      ]
+    }
+  }
+}

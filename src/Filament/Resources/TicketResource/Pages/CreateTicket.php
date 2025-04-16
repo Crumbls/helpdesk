@@ -1,0 +1,12 @@
+<?php
+
+namespace Crumbls\HelpDesk\Filament\Resources\TicketResource\Pages;
+
+use Crumbls\HelpDesk\Filament\Resources\TicketResource;
+use Filament\Actions;
+use Filament\Resources\Pages\CreateRecord;
+
+class CreateTicket extends CreateRecord
+{
+    protected static string $resource = TicketResource::class;
+}
