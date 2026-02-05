@@ -16,5 +16,5 @@ Route::group([
 	Route::apiResource('statuses', \Crumbls\HelpDesk\Http\Controllers\StatusController::class);
 	Route::apiResource('tickets', \Crumbls\HelpDesk\Http\Controllers\TicketController::class);
 	Route::apiResource('types', \Crumbls\HelpDesk\Http\Controllers\TypeController::class);
-	Route::apiResource('topic', \Crumbls\HelpDesk\Http\Controllers\TopicController::class);
+//	Route::apiResource('topic', \Crumbls\HelpDesk\Http\Controllers\TopicController::class);
 });

@@ -48,6 +48,16 @@ class Models {
 		return config('helpdesk.models.ticket', Ticket::class);
 	}
 
+
+	/**
+	 * @return string
+	 */
+	public static function topic(): string
+	{
+		dd(__METHOD__);
+		return config('helpdesk.models.topic', Topic::class);
+	}
+
 	/**
 	 * @return string
 	 */

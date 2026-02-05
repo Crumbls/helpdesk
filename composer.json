@@ -72,5 +72,8 @@
         "Crumbls\\HelpDesk\\HelpDeskServiceProvider"
       ]
     }
+  },
+  "suggest": {
+    "filament/filament": "Required to enable the Filament plugin integration"
   }
 }

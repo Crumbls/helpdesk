@@ -24,7 +24,7 @@ class TicketController extends ApiController
     {
         $validated = $request->validate([
             'ticket_type_id' => ['required', 'integer', 'exists:helpdesk_ticket_types,id'],
-            'ticket_status_id' => ['required', 'integer', 'exists:helpdesk_ticket_statuses,id'],
+            'ticket_status_id' => ['nullable', 'integer', 'exists:helpdesk_ticket_statuses,id'],
             'submitter_id' => ['required', 'integer', 'exists:users,id'],
             'department_id' => ['nullable', 'integer', 'exists:helpdesk_departments,id'],
             'priority_id' => ['nullable', 'integer', 'exists:helpdesk_priorities,id'],
@@ -36,6 +36,22 @@ class TicketController extends ApiController
             'due_at' => ['nullable', 'date'],
             'closed_at' => ['nullable', 'date'],
         ]);
+
+        if (empty($validated['ticket_status_id'])) {
+            $statusClass = Models::status();
+            $defaultStatus = $statusClass::where('is_default', true)->first();
+
+            if (!$defaultStatus) {
+                return $this->buildResponse([
+                    'error' => [
+                        'message' => 'No default status configured',
+                        'status' => Response::HTTP_UNPROCESSABLE_ENTITY,
+                    ],
+                ], $request, Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
+            $validated['ticket_status_id'] = $defaultStatus->id;
+        }
 
         $modelClass = $this->getModel();
 

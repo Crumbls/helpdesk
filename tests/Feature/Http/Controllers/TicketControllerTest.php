@@ -108,7 +108,6 @@ it('validates required fields on create', function () {
     $response->assertUnprocessable();
     $response->assertJsonValidationErrors([
         'ticket_type_id',
-        'ticket_status_id',
         'submitter_id',
         'title',
         'description',
@@ -225,6 +224,37 @@ it('returns 404 when deleting missing ticket', function () {
     $response = $this->deleteJson('/api/helpdesk/tickets/999');
 
     $response->assertNotFound();
+});
+
+it('uses default status when ticket_status_id is omitted', function () {
+    $deps = createTicketDeps();
+    $defaultStatus = TicketStatus::factory()->create(['is_default' => true, 'title' => 'Open']);
+
+    $response = $this->postJson('/api/helpdesk/tickets', [
+        'ticket_type_id' => $deps['type']->id,
+        'submitter_id' => $deps['userId'],
+        'title' => 'No status provided',
+        'description' => 'Should get default status',
+    ]);
+
+    $response->assertStatus(201);
+    $response->assertJsonFragment(['ticket_status_id' => $defaultStatus->id]);
+});
+
+it('returns error when no status provided and no default exists', function () {
+    $deps = createTicketDeps();
+
+    TicketStatus::query()->update(['is_default' => false]);
+
+    $response = $this->postJson('/api/helpdesk/tickets', [
+        'ticket_type_id' => $deps['type']->id,
+        'submitter_id' => $deps['userId'],
+        'title' => 'No status',
+        'description' => 'No default configured',
+    ]);
+
+    $response->assertStatus(422);
+    $response->assertJsonPath('error.message', 'No default status configured');
 });
 
 it('returns json by default', function () {
