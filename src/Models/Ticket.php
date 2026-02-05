@@ -13,8 +13,8 @@ use Crumbls\HelpDesk\Database\Factories\TicketFactory;
 
 class Ticket extends Model
 {
-    use HasFactory;
-    use SoftDeletes;
+    use HasFactory,
+	    SoftDeletes;
 
     protected static function newFactory()
     {

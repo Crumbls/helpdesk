@@ -12,7 +12,6 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->string('description')->nullable();
-            $table->string('color_name')->nullable();
             $table->string('color_background')->nullable();
             $table->string('color_foreground')->nullable();
             $table->integer('level')->default(0);

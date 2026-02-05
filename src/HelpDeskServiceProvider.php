@@ -17,77 +17,132 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
-use Filament\Panel;
-use Filament\PanelProvider;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
-class HelpDeskServiceProvider extends PanelProvider
+
+class HelpDeskServiceProvider extends ServiceProvider {
+	/**
+	 * Bootstrap the application services.
+	 *
+	 * @return void
+	 */
+	public function boot()
 {
-    public function configurePackage(): void
-    {
-        $this->loadMigrationsFrom(__DIR__ . '/Database/Migrations');
-        
-        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'helpdesk');
-        
-        $this->publishes([
-            __DIR__ . '/Config/helpdesk.php' => config_path('helpdesk.php'),
-        ], 'helpdesk-config');
-        
-        $this->publishes([
-            __DIR__ . '/Database/Migrations/' => database_path('migrations'),
-        ], 'helpdesk-migrations');
-        
-        $this->publishes([
-            __DIR__ . '/Resources/views' => resource_path('views/vendor/helpdesk'),
-        ], 'helpdesk-views');
-    }
+	$this->loadMigrationsFrom(__DIR__ . '/Database/Migrations');
 
-    public function panel(Panel $panel): Panel
-    {
-        return $panel
-            ->id('helpdesk')
-            ->path(config('helpdesk.path', 'helpdesk'))
-            ->login()
-            ->discoverResources(in: __DIR__ . '/Filament/Resources', for: 'Crumbls\\HelpDesk\\Filament\\Resources')
-            ->discoverPages(in: __DIR__ . '/Filament/Pages', for: 'Crumbls\\HelpDesk\\Filament\\Pages')
-            ->pages([
-                \Crumbls\HelpDesk\Filament\Pages\Dashboard::class,
-            ])
-            ->discoverWidgets(in: __DIR__ . '/Filament/Widgets', for: 'Crumbls\\HelpDesk\\Filament\\Widgets')
-            ->navigationGroups([
-                'Tickets',
-                'Categories',
-                'Settings',
-            ])
-            ->middleware([
-                EncryptCookies::class,
-                AddQueuedCookiesToResponse::class,
-                StartSession::class,
-                AuthenticateSession::class,
-                ShareErrorsFromSession::class,
-                VerifyCsrfToken::class,
-                SubstituteBindings::class,
-                DisableBladeIconComponents::class,
-                DispatchServingFilamentEvent::class,
-            ])
-            ->authMiddleware([
-                Authenticate::class,
-            ]);
-    }
+	$this->loadViewsFrom(__DIR__ . '/../resources/views', 'helpdesk');
 
-    public function boot(): void
-    {
-        $this->configurePackage();
-    }
+	$this->publishes([
+		__DIR__ . '/Config/helpdesk.php' => config_path('helpdesk.php'),
+	], 'helpdesk-config');
 
-    public function register(): void
-    {
-        parent::register();
-        
-        $this->mergeConfigFrom(
-            __DIR__ . '/Config/helpdesk.php',
-            'helpdesk'
-        );
-    }
+	$this->publishes([
+		__DIR__ . '/Database/Migrations/' => database_path('migrations'),
+	], 'helpdesk-migrations');
+
+	$this->publishes([
+		__DIR__ . '/Resources/views' => resource_path('views/vendor/helpdesk'),
+	], 'helpdesk-views');
+	/**
+	 * Config
+	 *
+	 * Uncomment this function call to make the config file publishable using the 'config' tag.
+	 */
+	// $this->publishes([
+	//     __DIR__.'/../../config/<%=PACKAGE_SLUG%>.php' => config_path('<%=PACKAGE_SLUG%>.php'),
+	// ], 'config');
+
+	/**
+	 * Routes
+	 *
+	 * Uncomment this function call to load the route files.
+	 * A web.php file has already been generated.
+	 */
+	$this->loadRoutesFrom(__DIR__.'/../routes/web.php');
+
+	/**
+	 * Translations
+	 *
+	 * Uncomment the first function call to load the translations.
+	 * Uncomment the second function call to load the JSON translations.
+	 * Uncomment the third function call to make the translations publishable using the 'translations' tag.
+	 */
+	// $this->loadTranslationsFrom(__DIR__.'/../../resources/lang', '<%=PACKAGE_SLUG%>');
+	// $this->loadJsonTranslationsFrom(__DIR__.'/../../resources/lang', '<%=PACKAGE_SLUG%>');
+	// $this->publishes([
+	//     __DIR__.'/../../resources/lang' => resource_path('lang/vendor/<%=PACKAGE_SLUG%>'),
+	// ], 'translations');
+
+	/**
+	 * Views
+	 *
+	 * Uncomment the first section to load the views.
+	 * Uncomment the second section to make the view publishable using the 'view' tags.
+	 */
+	// $this->loadViewsFrom(__DIR__.'/../../resources/views', '<%=PACKAGE_SLUG%>');
+	// $this->publishes([
+	//     __DIR__.'/../../resources/views' => resource_path('views/vendor/<%=PACKAGE_SLUG%>'),
+	// ], 'views');
+
+	/**
+	 * Commands
+	 *
+	 * Uncomment this section to load the commands.
+	 * A basic command file has already been generated in 'src\Console\Commands\MyPackageCommand.php'.
+	 */
+	// if ($this->app->runningInConsole()) {
+	//     $this->commands([
+	//         \<%=PACKAGE_NAMESPACE%>\Console\Commands\<%=CLASS_NAME%>Command::class,
+	//     ]);
+	// }
+
+	/**
+	 * Public assets
+	 *
+	 * Uncomment this functin call to make the public assets publishable using the 'public' tag.
+	 */
+	// $this->publishes([
+	//     __DIR__.'/../../public' => public_path('vendor/<%=PACKAGE_SLUG%>'),
+	// ], 'public');
+
+	/**
+	 * Migrations
+	 *
+	 * Uncomment the first function call to load the migrations.
+	 * Uncomment the second function call to make the migrations publishable using the 'migrations' tags.
+	 */
+	// $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
+	// $this->publishes([
+	//     __DIR__.'/../../database/migrations/' => database_path('migrations')
+	// ], 'migrations');
+
+	}
+
+	/**
+	 * Register the application services.
+	 *
+	 * @return void
+	 */
+	public function register()
+{
+	parent::register();
+
+	$this->mergeConfigFrom(
+		__DIR__ . '/../config/helpdesk.php',
+		'helpdesk'
+	);
+	/**
+	 * Config file
+	 *
+	 * Uncomment this function call to load the config file.
+	 * If the config file is also publishable, it will merge with that file
+	 */
+	// $this->mergeConfigFrom(
+	//     __DIR__.'/../../config/<%=PACKAGE_SLUG%>.php', '<%=PACKAGE_SLUG%>'
+	// );
+}
+
+
 }

@@ -12,9 +12,9 @@ class DepartmentFactory extends Factory
     public function definition(): array
     {
         return [
-            'title' => fake()->department(),
+            'title' => fake()->word(),
             'description' => fake()->sentence(),
-            'color_name' => fake()->randomElement(['primary', 'secondary', 'info']),
+            'color_background' => fake()->randomElement(['#3B82F6', '#6B7280', '#3B82F6']),
             'is_active' => true,
         ];
     }

@@ -12,26 +12,28 @@ class HelpdeskSeeder extends Seeder
 {
     public function run(): void
     {
-        // Create default priorities
         $priorities = [
             [
                 'title' => 'Urgent',
                 'description' => 'Critical issues requiring immediate attention',
-                'color_name' => 'danger',
+                'color_background' => '#EF4444',
+                'color_foreground' => '#ffffff',
                 'level' => 1,
                 'is_active' => true,
             ],
             [
                 'title' => 'High',
                 'description' => 'Important issues that need quick resolution',
-                'color_name' => 'warning',
+                'color_background' => '#F59E0B',
+                'color_foreground' => '#000000',
                 'level' => 2,
                 'is_active' => true,
             ],
             [
                 'title' => 'Normal',
                 'description' => 'Standard priority issues',
-                'color_name' => 'primary',
+                'color_background' => '#3B82F6',
+                'color_foreground' => '#ffffff',
                 'level' => 3,
                 'is_active' => true,
                 'is_default' => true,
@@ -39,7 +41,8 @@ class HelpdeskSeeder extends Seeder
             [
                 'title' => 'Low',
                 'description' => 'Non-urgent issues',
-                'color_name' => 'info',
+                'color_background' => '#3B82F6',
+                'color_foreground' => '#ffffff',
                 'level' => 4,
                 'is_active' => true,
             ],
@@ -52,38 +55,42 @@ class HelpdeskSeeder extends Seeder
             );
         }
 
-        // Create default statuses
         $statuses = [
             [
                 'title' => 'New',
                 'description' => 'Newly created ticket',
-                'color_name' => 'info',
+                'color_background' => '#3B82F6',
+                'color_foreground' => '#ffffff',
                 'is_active' => true,
                 'is_default' => true,
             ],
             [
                 'title' => 'In Progress',
                 'description' => 'Ticket is being worked on',
-                'color_name' => 'primary',
+                'color_background' => '#3B82F6',
+                'color_foreground' => '#ffffff',
                 'is_active' => true,
             ],
             [
                 'title' => 'Waiting for Customer',
                 'description' => 'Awaiting customer response',
-                'color_name' => 'warning',
+                'color_background' => '#F59E0B',
+                'color_foreground' => '#000000',
                 'is_active' => true,
             ],
             [
                 'title' => 'Resolved',
                 'description' => 'Issue has been resolved',
-                'color_name' => 'success',
+                'color_background' => '#10B981',
+                'color_foreground' => '#ffffff',
                 'is_active' => true,
                 'is_closed' => true,
             ],
             [
                 'title' => 'Closed',
                 'description' => 'Ticket has been closed',
-                'color_name' => 'secondary',
+                'color_background' => '#6B7280',
+                'color_foreground' => '#ffffff',
                 'is_active' => true,
                 'is_closed' => true,
             ],
@@ -96,30 +103,33 @@ class HelpdeskSeeder extends Seeder
             );
         }
 
-        // Create default ticket types
         $types = [
             [
                 'title' => 'Bug Report',
                 'description' => 'Report of software defects or issues',
-                'color_name' => 'danger',
+                'color_background' => '#EF4444',
+                'color_foreground' => '#ffffff',
                 'is_active' => true,
             ],
             [
                 'title' => 'Feature Request',
                 'description' => 'Request for new features or enhancements',
-                'color_name' => 'primary',
+                'color_background' => '#3B82F6',
+                'color_foreground' => '#ffffff',
                 'is_active' => true,
             ],
             [
                 'title' => 'Support',
                 'description' => 'General support inquiries',
-                'color_name' => 'info',
+                'color_background' => '#3B82F6',
+                'color_foreground' => '#ffffff',
                 'is_active' => true,
             ],
             [
                 'title' => 'Question',
                 'description' => 'General questions about the product',
-                'color_name' => 'warning',
+                'color_background' => '#F59E0B',
+                'color_foreground' => '#000000',
                 'is_active' => true,
             ],
         ];
@@ -131,30 +141,33 @@ class HelpdeskSeeder extends Seeder
             );
         }
 
-        // Create default departments
         $departments = [
             [
                 'title' => 'Technical Support',
                 'description' => 'Technical support and troubleshooting',
-                'color_name' => 'primary',
+                'color_background' => '#3B82F6',
+                'color_foreground' => '#ffffff',
                 'is_active' => true,
             ],
             [
                 'title' => 'Billing',
                 'description' => 'Billing and payment related inquiries',
-                'color_name' => 'success',
+                'color_background' => '#10B981',
+                'color_foreground' => '#ffffff',
                 'is_active' => true,
             ],
             [
                 'title' => 'Sales',
                 'description' => 'Sales related inquiries',
-                'color_name' => 'info',
+                'color_background' => '#3B82F6',
+                'color_foreground' => '#ffffff',
                 'is_active' => true,
             ],
             [
                 'title' => 'General',
                 'description' => 'General inquiries',
-                'color_name' => 'secondary',
+                'color_background' => '#6B7280',
+                'color_foreground' => '#ffffff',
                 'is_active' => true,
             ],
         ];

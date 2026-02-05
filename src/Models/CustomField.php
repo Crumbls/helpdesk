@@ -9,34 +9,17 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Crumbls\HelpDesk\Traits\HasColors;
 
-class Priority extends Model
+class CustomField extends Model
 {
-    use HasFactory, SoftDeletes, HasColors;
+    use HasFactory, SoftDeletes;
 
-    protected $table = 'helpdesk_priorities';
+    protected $table = 'helpdesk_custom_fields';
 
     protected $fillable = [
-        'title',
-        'description',
-        'color_background',
-        'color_foreground',
-        'level',
-        'is_active',
-        'is_default',
+       'title',
+	    'notyetbuiltout'
     ];
-
-    protected $casts = [
-        'level' => 'integer',
-        'is_active' => 'boolean',
-        'is_default' => 'boolean',
-    ];
-
-    protected $appends = [
-        'background_color',
-        'foreground_color',
-        'color_scheme',
-    ];
-
+/*
     protected static function newFactory(): PriorityFactory
     {
         return PriorityFactory::new();
@@ -46,4 +29,5 @@ class Priority extends Model
     {
         return $this->hasMany(Ticket::class, 'priority_id');
     }
+*/
 }

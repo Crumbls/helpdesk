@@ -14,7 +14,7 @@ class TicketStatusFactory extends Factory
         return [
             'title' => fake()->word(),
             'description' => fake()->sentence(),
-            'color_name' => fake()->randomElement(['primary', 'warning', 'success', 'danger']),
+            'color_background' => fake()->randomElement(['#3B82F6', '#F59E0B', '#10B981', '#EF4444']),
             'is_active' => true,
             'is_default' => false,
             'is_closed' => false,
@@ -25,7 +25,7 @@ class TicketStatusFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'is_closed' => true,
-            'color_name' => 'success',
+            'color_background' => '#10B981',
         ]);
     }
 

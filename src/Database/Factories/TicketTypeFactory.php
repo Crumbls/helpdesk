@@ -14,7 +14,7 @@ class TicketTypeFactory extends Factory
         return [
             'title' => fake()->word(),
             'description' => fake()->sentence(),
-            'color_name' => fake()->randomElement(['primary', 'secondary', 'success', 'warning']),
+            'color_background' => fake()->randomElement(['#3B82F6', '#6B7280', '#10B981', '#F59E0B']),
             'is_active' => true,
         ];
     }
