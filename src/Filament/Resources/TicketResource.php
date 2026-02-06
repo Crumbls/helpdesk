@@ -4,21 +4,43 @@ declare(strict_types=1);
 
 namespace Crumbls\HelpDesk\Filament\Resources;
 
+use Carbon\Carbon;
 use Crumbls\HelpDesk\Models;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\HtmlString;
+use Illuminate\Support\Str;
 
 class TicketResource extends Resource
 {
-    protected static ?string $navigationIcon = 'heroicon-o-ticket';
+	public static function getModelLabel(): string
+	{
+		return __('helpdesk::tickets.label');
+	}
 
-    protected static ?string $navigationGroup = 'Helpdesk';
+	public static function getPluralModelLabel(): string
+	{
+		return __('helpdesk::tickets.plural');
+	}
 
-    public static function getModel(): string
+	public static function getNavigationGroup(): ?string
+	{
+		return __(config('helpdesk.filament.navigation_group', 'Helpdesk'));
+	}
+
+	protected static ?string $navigationIcon = 'heroicon-o-ticket';
+
+	public static function getNavigationSort(): ?int
+	{
+		return config('helpdesk.filament.resources.ticket.sort', 100);
+	}
+
+	public static function getModel(): string
     {
         return Models::ticket();
     }
@@ -105,6 +127,111 @@ class TicketResource extends Resource
                             ->columnSpanFull(),
                     ])
                     ->collapsible(),
+
+                Forms\Components\Section::make('Comments')
+                    ->schema([
+                        Forms\Components\Repeater::make('comments')
+                            ->relationship(
+                                name: 'comments',
+                                modifyQueryUsing: fn (Builder $query) => $query->with('user')->orderBy('created_at', 'asc')
+                            )
+                            ->schema([
+                                Forms\Components\Grid::make(3)
+                                    ->schema([
+                                        Forms\Components\Placeholder::make('user_display')
+                                            ->label('Author')
+                                            ->content(fn ($record): string =>
+                                                $record?->user?->name ?? 'You'
+                                            ),
+
+                                        Forms\Components\Placeholder::make('created_display')
+                                            ->label('Posted')
+                                            ->content(fn ($record): string =>
+                                                $record?->created_at?->format('M j, Y g:i A') ?? '-'
+                                            ),
+
+                                        Forms\Components\Placeholder::make('updated_display')
+                                            ->label('Last Updated')
+                                            ->content(fn ($record): string =>
+                                                $record?->updated_at?->diffForHumans() ?? '-'
+                                            ),
+                                    ])
+                                    ->visible(fn ($record): bool => $record !== null),
+
+                                Forms\Components\RichEditor::make('content')
+                                    ->label(fn ($record): string => $record ? 'Edit Comment' : 'New Comment')
+                                    ->required()
+                                    ->disableToolbarButtons(['attachFiles'])
+                                    ->disabled(fn ($record): bool => $record !== null && Gate::denies('update', $record))
+                                    ->columnSpanFull(),
+
+                                Forms\Components\Grid::make(2)
+                                    ->schema([
+                                        Forms\Components\Toggle::make('is_private')
+                                            ->label('Private')
+                                            ->helperText('Only visible to staff')
+                                            ->default(false)
+                                            ->inline(false)
+                                            ->disabled(fn ($record): bool => $record !== null && Gate::denies('update', $record)),
+
+                                        Forms\Components\Toggle::make('is_resolution')
+                                            ->label('Resolution')
+                                            ->helperText('Marks this as the ticket resolution')
+                                            ->default(false)
+                                            ->inline(false)
+                                            ->disabled(fn ($record): bool => $record !== null && Gate::denies('update', $record)),
+                                    ]),
+                            ])
+                            ->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
+                                $data['user_id'] = auth()->id();
+                                return $data;
+                            })
+                            ->reorderable(false)
+                            ->addActionLabel('Add Comment')
+                            ->deleteAction(
+                                fn (Forms\Components\Actions\Action $action) => $action
+                                    ->requiresConfirmation()
+                                    ->authorize('delete')
+                            )
+                            ->itemLabel(function (array $state): ?string {
+                                $flags = collect([
+                                    ($state['is_private'] ?? false) ? 'Private' : null,
+                                    ($state['is_resolution'] ?? false) ? 'Resolution' : null,
+                                ])->filter();
+
+                                $date = isset($state['created_at'])
+                                    ? Carbon::parse($state['created_at'])->format('M j, Y g:i A')
+                                    : null;
+
+                                $preview = isset($state['content'])
+                                    ? Str::limit(strip_tags($state['content']), 50)
+                                    : null;
+
+                                if (!$date && !$preview) {
+                                    return 'New Comment';
+                                }
+
+                                $label = $flags->isNotEmpty()
+                                    ? '[' . $flags->join(', ') . '] '
+                                    : '';
+
+                                $label .= $date ?? '';
+
+                                if ($preview) {
+                                    $label .= $date ? ' - ' : '';
+                                    $label .= $preview;
+                                }
+
+                                return $label;
+                            })
+                            ->collapsible()
+                            ->collapsed(fn ($record): bool => $record !== null)
+                            ->defaultItems(0)
+                            ->columnSpanFull(),
+                    ])
+                    ->collapsible()
+                    ->collapsed(fn ($record): bool => $record === null)
+                    ->visible(fn ($record): bool => $record !== null),
             ]);
     }
 

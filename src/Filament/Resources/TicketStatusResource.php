@@ -16,11 +16,25 @@ class TicketStatusResource extends Resource
 {
     protected static ?string $navigationIcon = 'heroicon-o-check-circle';
 
-    protected static ?string $navigationGroup = 'Helpdesk';
+	public static function getModelLabel(): string
+	{
+		return __('helpdesk::statuses.label');
+	}
 
-    protected static ?string $modelLabel = 'Status';
+	public static function getPluralModelLabel(): string
+	{
+		return __('helpdesk::statuses.plural');
+	}
 
-    protected static ?string $pluralModelLabel = 'Statuses';
+	public static function getNavigationGroup(): ?string
+	{
+		return __(config('helpdesk.filament.settings_navigation_group', 'Helpdesk Settings'));
+	}
+
+	public static function getNavigationSort(): ?int
+	{
+		return config('helpdesk.filament.resources.status.sort', DepartmentResource::getNavigationSort() + 5);
+	}
 
     public static function getModel(): string
     {

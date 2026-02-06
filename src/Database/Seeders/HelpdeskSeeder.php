@@ -3,10 +3,12 @@
 namespace Crumbls\HelpDesk\Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Crumbls\HelpDesk\Models\Department;
 use Crumbls\HelpDesk\Models\Priority;
+use Crumbls\HelpDesk\Models\Ticket;
+use Crumbls\HelpDesk\Models\TicketComment;
 use Crumbls\HelpDesk\Models\TicketStatus;
 use Crumbls\HelpDesk\Models\TicketType;
-use Crumbls\HelpDesk\Models\Department;
 
 class HelpdeskSeeder extends Seeder
 {
@@ -177,6 +179,16 @@ class HelpdeskSeeder extends Seeder
                 ['title' => $department['title']],
                 $department
             );
+        }
+
+        $tickets = Ticket::all();
+
+        foreach ($tickets as $ticket) {
+            $commentCount = rand(2, 5);
+
+            for ($i = 0; $i < $commentCount; $i++) {
+                TicketComment::factory()->forTicket($ticket)->create();
+            }
         }
     }
 }

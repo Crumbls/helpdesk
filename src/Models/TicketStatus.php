@@ -2,14 +2,15 @@
 
 namespace Crumbls\HelpDesk\Models;
 
+use Crumbls\HelpDesk\Contracts\Models\TicketStatusContract;
 use Crumbls\HelpDesk\Database\Factories\TicketStatusFactory;
+use Crumbls\HelpDesk\Traits\HasColors;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Crumbls\HelpDesk\Traits\HasColors;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class TicketStatus extends Model
+class TicketStatus extends Model implements TicketStatusContract
 {
     use HasFactory, SoftDeletes, HasColors;
 

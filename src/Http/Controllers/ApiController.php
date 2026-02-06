@@ -16,9 +16,9 @@ abstract class ApiController extends Controller
 	public function __construct()
 	{
 		$snakeName = Str::snake(class_basename($this->getModel()));
-		if (config('helpdesk.api.'.$snakeName.'.usePolicy', false)) {
+		if (config("helpdesk.api.{$snakeName}.policy")) {
 			$camelName = Str::camel(class_basename($this->getModel()));
-			$this->authorizeResource(Models::$camelName(), 'priority');
+			$this->authorizeResource(Models::$camelName(), $snakeName);
 		}
 	}
 

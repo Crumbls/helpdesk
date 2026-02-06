@@ -21,6 +21,8 @@ class HelpDeskPlugin implements Plugin
 
     public function register(Panel $panel): void
     {
+		$resourceClasses = array_column((array)config('helpdesk.filament.resources', []), 'class');
+
         $panel
             ->resources([
                 DepartmentResource::class,

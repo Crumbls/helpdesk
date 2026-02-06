@@ -2,14 +2,18 @@
 
 namespace Crumbls\HelpDesk\Models;
 
-use App\Models\User;
+use Crumbls\HelpDesk\Contracts\Models\TicketCommentContract;
 use Crumbls\HelpDesk\Database\Factories\TicketCommentFactory;
+use Crumbls\HelpDesk\Events\CommentCreated;
+use Crumbls\HelpDesk\Events\CommentDeleted;
+use Crumbls\HelpDesk\Events\CommentUpdated;
+use Crumbls\HelpDesk\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class TicketComment extends Model
+class TicketComment extends Model implements TicketCommentContract
 {
     use HasFactory;
     use SoftDeletes;
@@ -34,6 +38,27 @@ class TicketComment extends Model
         return TicketCommentFactory::new();
     }
 
+    protected static function booted(): void
+    {
+        static::created(function (TicketComment $comment) {
+            if (config('helpdesk.events.enabled') && config('helpdesk.events.dispatch.comment_created')) {
+                event(new CommentCreated($comment));
+            }
+        });
+
+        static::updated(function (TicketComment $comment) {
+            if (config('helpdesk.events.enabled') && config('helpdesk.events.dispatch.comment_updated')) {
+                event(new CommentUpdated($comment, $comment->getChanges()));
+            }
+        });
+
+        static::deleting(function (TicketComment $comment) {
+            if (config('helpdesk.events.enabled') && config('helpdesk.events.dispatch.comment_deleted')) {
+                event(new CommentDeleted($comment));
+            }
+        });
+    }
+
     public function ticket(): BelongsTo
     {
         return $this->belongsTo(Ticket::class);
@@ -41,6 +66,6 @@ class TicketComment extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Models::user());
     }
 }

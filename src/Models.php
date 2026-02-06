@@ -8,6 +8,8 @@ use Crumbls\HelpDesk\Models\CustomField;
 use Crumbls\HelpDesk\Models\Department;
 use Crumbls\HelpDesk\Models\Priority;
 use Crumbls\HelpDesk\Models\Ticket;
+use Crumbls\HelpDesk\Models\TicketAssignment;
+use Crumbls\HelpDesk\Models\TicketComment;
 use Crumbls\HelpDesk\Models\TicketStatus;
 use Crumbls\HelpDesk\Models\TicketType;
 
@@ -17,7 +19,12 @@ class Models {
 	 */
 	public static function customField(): string
 	{
-		return config('helpdesk.models.custom-field', CustomField::class);
+		return config('helpdesk.models.custom_field', CustomField::class);
+	}
+
+	public static function comment(): string
+	{
+		return config('helpdesk.models.comment', TicketComment::class);
 	}
 
 	public static function department(): string
@@ -52,10 +59,9 @@ class Models {
 	/**
 	 * @return string
 	 */
-	public static function topic(): string
+	public static function ticketAssignment(): string
 	{
-		dd(__METHOD__);
-		return config('helpdesk.models.topic', Topic::class);
+		return config('helpdesk.models.ticket_assignment', TicketAssignment::class);
 	}
 
 	/**
@@ -72,9 +78,16 @@ class Models {
 	 */
 	public static function user(): string
 	{
-		return (string)once(function() {
+		return (string) once(function () {
+			$configured = config('helpdesk.models.user');
+
+			if ($configured !== null) {
+				return $configured;
+			}
+
 			$guard = config('auth.defaults.guard');
 			$provider = config("auth.guards.$guard.provider");
+
 			return config("auth.providers.$provider.model", \App\Models\User::class);
 		});
 	}

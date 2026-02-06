@@ -2,23 +2,60 @@
 
 namespace Crumbls\HelpDesk\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use App\Models\User;
+use Crumbls\HelpDesk\Contracts\Models\TicketContract;
 use Crumbls\HelpDesk\Database\Factories\TicketFactory;
+use Crumbls\HelpDesk\Events\TicketCreated;
+use Crumbls\HelpDesk\Events\TicketDeleted;
+use Crumbls\HelpDesk\Events\TicketStatusChanged;
+use Crumbls\HelpDesk\Events\TicketUpdated;
+use Crumbls\HelpDesk\Models;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Ticket extends Model
+class Ticket extends Model implements TicketContract
 {
     use HasFactory,
-	    SoftDeletes;
+        SoftDeletes;
 
     protected static function newFactory()
     {
         return TicketFactory::new();
+    }
+
+    protected static function booted(): void
+    {
+        static::created(function (Ticket $ticket) {
+            if (config('helpdesk.events.enabled') && config('helpdesk.events.dispatch.ticket_created')) {
+                event(new TicketCreated($ticket));
+            }
+        });
+
+        static::updated(function (Ticket $ticket) {
+            if (config('helpdesk.events.enabled') && config('helpdesk.events.dispatch.ticket_updated')) {
+                event(new TicketUpdated($ticket, $ticket->getChanges()));
+            }
+
+            if (config('helpdesk.events.enabled')
+                && config('helpdesk.events.dispatch.ticket_status_changed')
+                && $ticket->wasChanged('ticket_status_id')
+            ) {
+                event(new TicketStatusChanged(
+                    $ticket,
+                    $ticket->getOriginal('ticket_status_id'),
+                    $ticket->ticket_status_id
+                ));
+            }
+        });
+
+        static::deleting(function (Ticket $ticket) {
+            if (config('helpdesk.events.enabled') && config('helpdesk.events.dispatch.ticket_deleted')) {
+                event(new TicketDeleted($ticket));
+            }
+        });
     }
 
     protected $table = 'helpdesk_tickets';
@@ -36,11 +73,21 @@ class Ticket extends Model
         'source',
         'due_at',
         'closed_at',
+        'first_response_at',
+        'sla_response_due_at',
+        'sla_resolution_due_at',
+        'sla_response_breached',
+        'sla_resolution_breached',
     ];
 
     protected $casts = [
         'due_at' => 'datetime',
         'closed_at' => 'datetime',
+        'first_response_at' => 'datetime',
+        'sla_response_due_at' => 'datetime',
+        'sla_resolution_due_at' => 'datetime',
+        'sla_response_breached' => 'boolean',
+        'sla_resolution_breached' => 'boolean',
     ];
 
     public function type(): BelongsTo
@@ -55,7 +102,7 @@ class Ticket extends Model
 
     public function submitter(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'submitter_id');
+        return $this->belongsTo(Models::user(), 'submitter_id');
     }
 
     public function department(): BelongsTo
@@ -85,7 +132,7 @@ class Ticket extends Model
 
     public function assignedUsers(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'helpdesk_ticket_assignments')
+        return $this->belongsToMany(Models::user(), 'helpdesk_ticket_assignments')
             ->withPivot('role')
             ->withTimestamps();
     }
@@ -97,7 +144,7 @@ class Ticket extends Model
 
     public function watchers(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'helpdesk_ticket_watchers');
+        return $this->belongsToMany(Models::user(), 'helpdesk_ticket_watchers');
     }
 
     public function comments(): HasMany

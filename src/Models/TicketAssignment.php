@@ -2,11 +2,12 @@
 
 namespace Crumbls\HelpDesk\Models;
 
+use Crumbls\HelpDesk\Contracts\Models\TicketAssignmentContract;
+use Crumbls\HelpDesk\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\User;
 
-class TicketAssignment extends Model
+class TicketAssignment extends Model implements TicketAssignmentContract
 {
     protected $table = 'helpdesk_ticket_assignments';
 
@@ -23,6 +24,6 @@ class TicketAssignment extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Models::user());
     }
 }

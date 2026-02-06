@@ -16,8 +16,25 @@ class PriorityResource extends Resource
 {
     protected static ?string $navigationIcon = 'heroicon-o-flag';
 
-    protected static ?string $navigationGroup = 'Helpdesk';
+	public static function getModelLabel(): string
+	{
+		return __('helpdesk::priorities.label');
+	}
 
+	public static function getPluralModelLabel(): string
+	{
+		return __('helpdesk::priorities.plural');
+	}
+
+	public static function getNavigationGroup(): ?string
+	{
+		return __(config('helpdesk.filament.settings_navigation_group', 'Helpdesk Settings'));
+	}
+
+	public static function getNavigationSort(): ?int
+	{
+		return config('helpdesk.filament.resources.priority.sort', TicketTypeResource::getNavigationSort() + 5);
+	}
     public static function getModel(): string
     {
         return Models::priority();
@@ -63,6 +80,26 @@ class PriorityResource extends Resource
                                     ->default(false),
                             ]),
                     ]),
+
+                Forms\Components\Section::make('SLA Settings')
+                    ->description('Service Level Agreement response and resolution times')
+                    ->schema([
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\TextInput::make('sla_response_hours')
+                                    ->label('Response Time (hours)')
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->helperText('Hours until first response is due'),
+
+                                Forms\Components\TextInput::make('sla_resolution_hours')
+                                    ->label('Resolution Time (hours)')
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->helperText('Hours until ticket resolution is due'),
+                            ]),
+                    ])
+                    ->collapsible(),
             ]);
     }
 
@@ -92,6 +129,18 @@ class PriorityResource extends Resource
                 Tables\Columns\ToggleColumn::make('is_active')
                     ->label('Active')
                     ->sortable(),
+
+                Tables\Columns\TextColumn::make('sla_response_hours')
+                    ->label('Response SLA')
+                    ->suffix('h')
+                    ->sortable()
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('sla_resolution_hours')
+                    ->label('Resolution SLA')
+                    ->suffix('h')
+                    ->sortable()
+                    ->toggleable(),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()

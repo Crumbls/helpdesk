@@ -16,9 +16,27 @@ class DepartmentResource extends Resource
 {
     protected static ?string $navigationIcon = 'heroicon-o-building-office';
 
-    protected static ?string $navigationGroup = 'Helpdesk';
+	public static function getModelLabel(): string
+	{
+		return __('helpdesk::departments.label');
+	}
 
-    public static function getModel(): string
+	public static function getPluralModelLabel(): string
+	{
+		return __('helpdesk::departments.plural');
+	}
+
+	public static function getNavigationGroup(): ?string
+	{
+		return __(config('helpdesk.filament.settings_navigation_group', 'Helpdesk Settings'));
+	}
+
+	public static function getNavigationSort(): ?int
+	{
+		return config('helpdesk.filament.resources.department.sort', TicketResource::getNavigationSort() + 5);
+	}
+
+	public static function getModel(): string
     {
         return Models::department();
     }

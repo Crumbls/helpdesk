@@ -2,16 +2,17 @@
 
 namespace Crumbls\HelpDesk\Models;
 
+use Crumbls\HelpDesk\Contracts\Models\DepartmentContract;
+use Crumbls\HelpDesk\Database\Factories\DepartmentFactory;
 use Crumbls\HelpDesk\Models;
-use Illuminate\Database\Eloquent\Model;
+use Crumbls\HelpDesk\Traits\HasColors;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Crumbls\HelpDesk\Database\Factories\DepartmentFactory;
-use Crumbls\HelpDesk\Traits\HasColors;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Department extends Model
+class Department extends Model implements DepartmentContract
 {
     use HasFactory, SoftDeletes, HasColors;
 
@@ -47,7 +48,6 @@ class Department extends Model
 
 	public function users(): BelongsToMany
 	{
-		dd(__LINE__);
 		return $this->belongsToMany(Models::user(), 'helpdesk_department_user')
 			->using(DepartmentUser::class)
 			->withPivot(['role', 'assigned_only'])

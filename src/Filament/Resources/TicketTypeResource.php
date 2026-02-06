@@ -16,13 +16,27 @@ class TicketTypeResource extends Resource
 {
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    protected static ?string $navigationGroup = 'Helpdesk';
+	public static function getModelLabel(): string
+	{
+		return __('helpdesk::types.label');
+	}
 
-    protected static ?string $modelLabel = 'Ticket Type';
+	public static function getPluralModelLabel(): string
+	{
+		return __('helpdesk::types.plural');
+	}
 
-    protected static ?string $pluralModelLabel = 'Ticket Types';
+	public static function getNavigationGroup(): ?string
+	{
+		return __(config('helpdesk.filament.settings_navigation_group', 'Helpdesk Settings'));
+	}
 
-    public static function getModel(): string
+	public static function getNavigationSort(): ?int
+	{
+		return config('helpdesk.filament.resources.type.sort', TicketStatusResource::getNavigationSort() + 5);
+	}
+
+	public static function getModel(): string
     {
         return Models::type();
     }
