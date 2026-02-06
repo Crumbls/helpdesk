@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Crumbls\HelpDesk;
 
+use App\Models\User;
 use Crumbls\HelpDesk\Models\CustomField;
 use Crumbls\HelpDesk\Models\Department;
 use Crumbls\HelpDesk\Models\Priority;
@@ -88,7 +89,7 @@ class Models {
 			$guard = config('auth.defaults.guard');
 			$provider = config("auth.guards.$guard.provider");
 
-			return config("auth.providers.$provider.model", \App\Models\User::class);
+			return config("auth.providers.$provider.model", User::class);
 		});
 	}
 

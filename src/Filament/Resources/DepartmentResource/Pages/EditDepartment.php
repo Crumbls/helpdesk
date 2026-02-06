@@ -2,6 +2,7 @@
 
 namespace Crumbls\HelpDesk\Filament\Resources\DepartmentResource\Pages;
 
+use Filament\Actions\DeleteAction;
 use Crumbls\HelpDesk\Filament\Resources\DepartmentResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
@@ -13,7 +14,7 @@ class EditDepartment extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 }

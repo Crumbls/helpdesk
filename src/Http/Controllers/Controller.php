@@ -2,6 +2,7 @@
 
 namespace Crumbls\HelpDesk\Http\Controllers;
 
+use SimpleXMLElement;
 use Crumbls\HelpDesk\Models;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
@@ -26,7 +27,7 @@ abstract class Controller extends BaseController
 
 	private function xmlResponse(array $data, int $status = 200)
 	{
-		$xml = new \SimpleXMLElement('<response/>');
+		$xml = new SimpleXMLElement('<response/>');
 
 		$this->arrayToXml($data, $xml);
 
@@ -34,7 +35,7 @@ abstract class Controller extends BaseController
 			->header('Content-Type', 'application/xml');
 	}
 
-	private function arrayToXml(array $data, \SimpleXMLElement $xml): void
+	private function arrayToXml(array $data, SimpleXMLElement $xml): void
 	{
 		foreach ($data as $key => $value) {
 			$elementName = is_numeric($key) ? 'item' : $key;

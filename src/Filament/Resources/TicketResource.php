@@ -4,6 +4,26 @@ declare(strict_types=1);
 
 namespace Crumbls\HelpDesk\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Schemas\Components\Grid;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Toggle;
+use Filament\Actions\Action;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Crumbls\HelpDesk\Filament\Resources\TicketResource\Pages\ListTickets;
+use Crumbls\HelpDesk\Filament\Resources\TicketResource\Pages\CreateTicket;
+use Crumbls\HelpDesk\Filament\Resources\TicketResource\Pages\EditTicket;
 use Carbon\Carbon;
 use Crumbls\HelpDesk\Models;
 use Filament\Forms;
@@ -33,7 +53,7 @@ class TicketResource extends Resource
 		return __(config('helpdesk.filament.navigation_group', 'Helpdesk'));
 	}
 
-	protected static ?string $navigationIcon = 'heroicon-o-ticket';
+	protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-ticket';
 
 	public static function getNavigationSort(): ?int
 	{
@@ -45,54 +65,54 @@ class TicketResource extends Resource
         return Models::ticket();
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Ticket Details')
+        return $schema
+            ->components([
+                Section::make('Ticket Details')
                     ->schema([
-                        Forms\Components\TextInput::make('title')
+                        TextInput::make('title')
                             ->required()
                             ->maxLength(255)
                             ->columnSpanFull(),
 
-                        Forms\Components\Textarea::make('description')
+                        Textarea::make('description')
                             ->required()
                             ->rows(5)
                             ->columnSpanFull(),
 
-                        Forms\Components\Grid::make(3)
+                        Grid::make(3)
                             ->schema([
-                                Forms\Components\Select::make('ticket_type_id')
+                                Select::make('ticket_type_id')
                                     ->label('Type')
                                     ->relationship('type', 'title')
                                     ->required()
                                     ->searchable()
                                     ->preload(),
 
-                                Forms\Components\Select::make('ticket_status_id')
+                                Select::make('ticket_status_id')
                                     ->label('Status')
                                     ->relationship('status', 'title')
                                     ->required()
                                     ->searchable()
                                     ->preload(),
 
-                                Forms\Components\Select::make('priority_id')
+                                Select::make('priority_id')
                                     ->label('Priority')
                                     ->relationship('priority', 'title')
                                     ->searchable()
                                     ->preload(),
                             ]),
 
-                        Forms\Components\Grid::make(2)
+                        Grid::make(2)
                             ->schema([
-                                Forms\Components\Select::make('department_id')
+                                Select::make('department_id')
                                     ->label('Department')
                                     ->relationship('department', 'title')
                                     ->searchable()
                                     ->preload(),
 
-                                Forms\Components\Select::make('submitter_id')
+                                Select::make('submitter_id')
                                     ->label('Submitter')
                                     ->relationship('submitter', 'name')
                                     ->required()
@@ -100,57 +120,57 @@ class TicketResource extends Resource
                                     ->preload(),
                             ]),
 
-                        Forms\Components\Select::make('parent_ticket_id')
+                        Select::make('parent_ticket_id')
                             ->label('Parent Ticket')
                             ->relationship('parentTicket', 'title')
                             ->searchable()
                             ->preload(),
 
-                        Forms\Components\TextInput::make('source')
+                        TextInput::make('source')
                             ->maxLength(255)
                             ->default('web'),
                     ]),
 
-                Forms\Components\Section::make('Dates & Resolution')
+                Section::make('Dates & Resolution')
                     ->schema([
-                        Forms\Components\Grid::make(2)
+                        Grid::make(2)
                             ->schema([
-                                Forms\Components\DateTimePicker::make('due_at')
+                                DateTimePicker::make('due_at')
                                     ->label('Due Date'),
 
-                                Forms\Components\DateTimePicker::make('closed_at')
+                                DateTimePicker::make('closed_at')
                                     ->label('Closed Date'),
                             ]),
 
-                        Forms\Components\Textarea::make('resolution')
+                        Textarea::make('resolution')
                             ->rows(3)
                             ->columnSpanFull(),
                     ])
                     ->collapsible(),
 
-                Forms\Components\Section::make('Comments')
+                Section::make('Comments')
                     ->schema([
-                        Forms\Components\Repeater::make('comments')
+                        Repeater::make('comments')
                             ->relationship(
                                 name: 'comments',
                                 modifyQueryUsing: fn (Builder $query) => $query->with('user')->orderBy('created_at', 'asc')
                             )
                             ->schema([
-                                Forms\Components\Grid::make(3)
+                                Grid::make(3)
                                     ->schema([
-                                        Forms\Components\Placeholder::make('user_display')
+                                        Placeholder::make('user_display')
                                             ->label('Author')
                                             ->content(fn ($record): string =>
                                                 $record?->user?->name ?? 'You'
                                             ),
 
-                                        Forms\Components\Placeholder::make('created_display')
+                                        Placeholder::make('created_display')
                                             ->label('Posted')
                                             ->content(fn ($record): string =>
                                                 $record?->created_at?->format('M j, Y g:i A') ?? '-'
                                             ),
 
-                                        Forms\Components\Placeholder::make('updated_display')
+                                        Placeholder::make('updated_display')
                                             ->label('Last Updated')
                                             ->content(fn ($record): string =>
                                                 $record?->updated_at?->diffForHumans() ?? '-'
@@ -158,23 +178,23 @@ class TicketResource extends Resource
                                     ])
                                     ->visible(fn ($record): bool => $record !== null),
 
-                                Forms\Components\RichEditor::make('content')
+                                RichEditor::make('content')
                                     ->label(fn ($record): string => $record ? 'Edit Comment' : 'New Comment')
                                     ->required()
                                     ->disableToolbarButtons(['attachFiles'])
                                     ->disabled(fn ($record): bool => $record !== null && Gate::denies('update', $record))
                                     ->columnSpanFull(),
 
-                                Forms\Components\Grid::make(2)
+                                Grid::make(2)
                                     ->schema([
-                                        Forms\Components\Toggle::make('is_private')
+                                        Toggle::make('is_private')
                                             ->label('Private')
                                             ->helperText('Only visible to staff')
                                             ->default(false)
                                             ->inline(false)
                                             ->disabled(fn ($record): bool => $record !== null && Gate::denies('update', $record)),
 
-                                        Forms\Components\Toggle::make('is_resolution')
+                                        Toggle::make('is_resolution')
                                             ->label('Resolution')
                                             ->helperText('Marks this as the ticket resolution')
                                             ->default(false)
@@ -189,7 +209,7 @@ class TicketResource extends Resource
                             ->reorderable(false)
                             ->addActionLabel('Add Comment')
                             ->deleteAction(
-                                fn (Forms\Components\Actions\Action $action) => $action
+                                fn (Action $action) => $action
                                     ->requiresConfirmation()
                                     ->authorize('delete')
                             )
@@ -239,16 +259,16 @@ class TicketResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')
+                TextColumn::make('id')
                     ->label('#')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('title')
+                TextColumn::make('title')
                     ->searchable()
                     ->sortable()
                     ->limit(60),
 
-                Tables\Columns\TextColumn::make('status.title')
+                TextColumn::make('status.title')
                     ->label('Status')
                     ->formatStateUsing(fn ($record) => new HtmlString(
                         '<span style="background-color: ' . e($record->status?->background_color ?? '#6B7280') . '; color: ' . e($record->status?->foreground_color ?? '#ffffff') . '; padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.75rem;">' . e($record->status?->title ?? '-') . '</span>'
@@ -256,7 +276,7 @@ class TicketResource extends Resource
                     ->html()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('priority.title')
+                TextColumn::make('priority.title')
                     ->label('Priority')
                     ->formatStateUsing(fn ($record) => $record->priority
                         ? new HtmlString(
@@ -267,56 +287,56 @@ class TicketResource extends Resource
                     ->html()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('type.title')
+                TextColumn::make('type.title')
                     ->label('Type')
                     ->sortable()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('department.title')
+                TextColumn::make('department.title')
                     ->label('Department')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                Tables\Columns\TextColumn::make('submitter.name')
+                TextColumn::make('submitter.name')
                     ->label('Submitter')
                     ->sortable()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('due_at')
+                TextColumn::make('due_at')
                     ->label('Due')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('id', 'desc')
             ->filters([
-                Tables\Filters\SelectFilter::make('ticket_status_id')
+                SelectFilter::make('ticket_status_id')
                     ->label('Status')
                     ->relationship('status', 'title'),
 
-                Tables\Filters\SelectFilter::make('priority_id')
+                SelectFilter::make('priority_id')
                     ->label('Priority')
                     ->relationship('priority', 'title'),
 
-                Tables\Filters\SelectFilter::make('ticket_type_id')
+                SelectFilter::make('ticket_type_id')
                     ->label('Type')
                     ->relationship('type', 'title'),
 
-                Tables\Filters\SelectFilter::make('department_id')
+                SelectFilter::make('department_id')
                     ->label('Department')
                     ->relationship('department', 'title'),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -331,9 +351,9 @@ class TicketResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => \Crumbls\HelpDesk\Filament\Resources\TicketResource\Pages\ListTickets::route('/'),
-            'create' => \Crumbls\HelpDesk\Filament\Resources\TicketResource\Pages\CreateTicket::route('/create'),
-            'edit' => \Crumbls\HelpDesk\Filament\Resources\TicketResource\Pages\EditTicket::route('/{record}/edit'),
+            'index' => ListTickets::route('/'),
+            'create' => CreateTicket::route('/create'),
+            'edit' => EditTicket::route('/{record}/edit'),
         ];
     }
 }

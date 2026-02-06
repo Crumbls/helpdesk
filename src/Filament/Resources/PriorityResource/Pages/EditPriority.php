@@ -2,6 +2,7 @@
 
 namespace Crumbls\HelpDesk\Filament\Resources\PriorityResource\Pages;
 
+use Filament\Actions\DeleteAction;
 use Crumbls\HelpDesk\Filament\Resources\PriorityResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
@@ -13,7 +14,7 @@ class EditPriority extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 }
