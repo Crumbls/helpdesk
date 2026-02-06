@@ -19,6 +19,17 @@ class TicketType extends Model implements TicketTypeContract
         return TicketTypeFactory::new();
     }
 
+    protected static function booted(): void
+    {
+        static::saving(function (TicketType $type) {
+            if ($type->is_default) {
+                static::where('is_default', true)
+                    ->where('id', '!=', $type->id ?? 0)
+                    ->update(['is_default' => false]);
+            }
+        });
+    }
+
     protected $table = 'helpdesk_ticket_types';
 
     protected $fillable = [
@@ -27,10 +38,12 @@ class TicketType extends Model implements TicketTypeContract
         'color_background',
         'color_foreground',
         'is_active',
+        'is_default',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'is_default' => 'boolean',
     ];
 
     protected $appends = [

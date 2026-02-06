@@ -28,9 +28,14 @@ class TypeController extends ApiController
             'color_background' => ['nullable', 'string'],
             'color_foreground' => ['nullable', 'string'],
             'is_active' => ['boolean'],
+            'is_default' => ['boolean'],
         ]);
 
         $modelClass = $this->getModel();
+
+        if (!empty($validated['is_default'])) {
+            $modelClass::where('is_default', true)->update(['is_default' => false]);
+        }
 
         $record = $modelClass::create($validated);
 
@@ -63,7 +68,14 @@ class TypeController extends ApiController
             'color_background' => ['nullable', 'string'],
             'color_foreground' => ['nullable', 'string'],
             'is_active' => ['sometimes', 'boolean'],
+            'is_default' => ['sometimes', 'boolean'],
         ]);
+
+        if (!empty($validated['is_default'])) {
+            $modelClass::where('is_default', true)
+                ->where('id', '!=', $record->id)
+                ->update(['is_default' => false]);
+        }
 
         $record->update($validated);
 

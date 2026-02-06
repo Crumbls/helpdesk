@@ -3,6 +3,7 @@
 namespace Crumbls\HelpDesk\Models;
 
 use Crumbls\HelpDesk\Contracts\Models\TicketContract;
+use Crumbls\HelpDesk\Contracts\SlaCalculator;
 use Crumbls\HelpDesk\Database\Factories\TicketFactory;
 use Crumbls\HelpDesk\Events\TicketCreated;
 use Crumbls\HelpDesk\Events\TicketDeleted;
@@ -28,6 +29,37 @@ class Ticket extends Model implements TicketContract
 
     protected static function booted(): void
     {
+        static::creating(function (Ticket $ticket) {
+            if (empty($ticket->ticket_status_id)) {
+                $statusClass = Models::status();
+                $default = $statusClass::where('is_default', true)->first();
+                if ($default) {
+                    $ticket->ticket_status_id = $default->id;
+                }
+            }
+
+            if (empty($ticket->ticket_type_id)) {
+                $typeClass = Models::type();
+                $default = $typeClass::where('is_default', true)->first();
+                if ($default) {
+                    $ticket->ticket_type_id = $default->id;
+                }
+            }
+
+            if (config('helpdesk.sla.enabled') && $ticket->priority_id) {
+                $sla = app(SlaCalculator::class);
+                $now = now();
+
+                if (empty($ticket->sla_response_due_at)) {
+                    $ticket->sla_response_due_at = $sla->calculateResponseDue($ticket->priority_id, $now);
+                }
+
+                if (empty($ticket->sla_resolution_due_at)) {
+                    $ticket->sla_resolution_due_at = $sla->calculateResolutionDue($ticket->priority_id, $now);
+                }
+            }
+        });
+
         static::created(function (Ticket $ticket) {
             if (config('helpdesk.events.enabled') && config('helpdesk.events.dispatch.ticket_created')) {
                 event(new TicketCreated($ticket));

@@ -81,9 +81,16 @@ class TicketTypeResource extends Resource
                                     ->helperText('Auto-calculated from background if left blank.'),
                             ]),
 
-                        Toggle::make('is_active')
-                            ->label('Active')
-                            ->default(true),
+                        Grid::make(2)
+                            ->schema([
+                                Toggle::make('is_active')
+                                    ->label('Active')
+                                    ->default(true),
+
+                                Toggle::make('is_default')
+                                    ->label('Default')
+                                    ->default(false),
+                            ]),
                     ]),
             ]);
     }
@@ -103,6 +110,10 @@ class TicketTypeResource extends Resource
                 TextColumn::make('description')
                     ->limit(50)
                     ->toggleable(),
+
+                ToggleColumn::make('is_default')
+                    ->label('Default')
+                    ->sortable(),
 
                 ToggleColumn::make('is_active')
                     ->label('Active')

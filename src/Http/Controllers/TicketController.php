@@ -23,7 +23,7 @@ class TicketController extends ApiController
     public function store(Request $request): Response
     {
         $validated = $request->validate([
-            'ticket_type_id' => ['required', 'integer', 'exists:helpdesk_ticket_types,id'],
+            'ticket_type_id' => ['nullable', 'integer', 'exists:helpdesk_ticket_types,id'],
             'ticket_status_id' => ['nullable', 'integer', 'exists:helpdesk_ticket_statuses,id'],
             'submitter_id' => ['required', 'integer', 'exists:users,id'],
             'department_id' => ['nullable', 'integer', 'exists:helpdesk_departments,id'],
@@ -51,6 +51,22 @@ class TicketController extends ApiController
             }
 
             $validated['ticket_status_id'] = $defaultStatus->id;
+        }
+
+        if (empty($validated['ticket_type_id'])) {
+            $typeClass = Models::type();
+            $defaultType = $typeClass::where('is_default', true)->first();
+
+            if (!$defaultType) {
+                return $this->buildResponse([
+                    'error' => [
+                        'message' => 'No default type configured',
+                        'status' => Response::HTTP_UNPROCESSABLE_ENTITY,
+                    ],
+                ], $request, Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
+            $validated['ticket_type_id'] = $defaultType->id;
         }
 
         $modelClass = $this->getModel();

@@ -107,7 +107,6 @@ it('validates required fields on create', function () {
 
     $response->assertUnprocessable();
     $response->assertJsonValidationErrors([
-        'ticket_type_id',
         'submitter_id',
         'title',
         'description',

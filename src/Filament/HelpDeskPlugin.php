@@ -21,16 +21,22 @@ class HelpDeskPlugin implements Plugin
 
     public function register(Panel $panel): void
     {
-		$resourceClasses = array_column((array)config('helpdesk.filament.resources', []), 'class');
+        $resourceClasses = array_column(
+            (array) config('helpdesk.filament.resources', []),
+            'class'
+        );
 
-        $panel
-            ->resources([
+        if (empty($resourceClasses)) {
+            $resourceClasses = [
                 DepartmentResource::class,
                 PriorityResource::class,
                 TicketResource::class,
                 TicketStatusResource::class,
                 TicketTypeResource::class,
-            ]);
+            ];
+        }
+
+        $panel->resources($resourceClasses);
     }
 
     public function boot(Panel $panel): void
