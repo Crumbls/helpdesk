@@ -270,21 +270,23 @@ class TicketResource extends Resource
 
                 TextColumn::make('status.title')
                     ->label('Status')
-                    ->formatStateUsing(fn ($record) => new HtmlString(
-                        '<span style="background-color: ' . e($record->status?->background_color ?? '#6B7280') . '; color: ' . e($record->status?->foreground_color ?? '#ffffff') . '; padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.75rem;">' . e($record->status?->title ?? '-') . '</span>'
-                    ))
-                    ->html()
+                    ->badge()
+                    ->color(fn ($record): string => match (true) {
+                        $record->status?->background_color !== null => 'gray',
+                        default => 'gray',
+                    })
                     ->sortable(),
 
                 TextColumn::make('priority.title')
                     ->label('Priority')
-                    ->formatStateUsing(fn ($record) => $record->priority
-                        ? new HtmlString(
-                            '<span style="background-color: ' . e($record->priority->background_color) . '; color: ' . e($record->priority->foreground_color) . '; padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.75rem;">' . e($record->priority->title) . '</span>'
-                        )
-                        : '-'
-                    )
-                    ->html()
+                    ->badge()
+                    ->color(fn ($record): string => match (strtolower($record->priority?->title ?? '')) {
+                        'critical', 'urgent' => 'danger',
+                        'high' => 'warning',
+                        'medium', 'normal' => 'primary',
+                        'low' => 'gray',
+                        default => 'gray',
+                    })
                     ->sortable(),
 
                 TextColumn::make('type.title')

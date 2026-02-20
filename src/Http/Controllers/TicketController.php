@@ -26,6 +26,10 @@ class TicketController extends ApiController
             'ticket_type_id' => ['nullable', 'integer', 'exists:helpdesk_ticket_types,id'],
             'ticket_status_id' => ['nullable', 'integer', 'exists:helpdesk_ticket_statuses,id'],
             'submitter_id' => ['required', 'integer', 'exists:users,id'],
+            'submitter_name' => ['nullable', 'string', 'max:255'],
+            'submitter_email' => ['nullable', 'email', 'max:255'],
+            'submitter_phone' => ['nullable', 'string', 'max:50'],
+            'submitter_company' => ['nullable', 'string', 'max:255'],
             'department_id' => ['nullable', 'integer', 'exists:helpdesk_departments,id'],
             'priority_id' => ['nullable', 'integer', 'exists:helpdesk_priorities,id'],
             'parent_ticket_id' => ['nullable', 'integer', 'exists:helpdesk_tickets,id'],
@@ -33,6 +37,7 @@ class TicketController extends ApiController
             'description' => ['required', 'string'],
             'resolution' => ['nullable', 'string'],
             'source' => ['nullable', 'string', 'max:255'],
+            'metadata' => ['nullable', 'array'],
             'due_at' => ['nullable', 'date'],
             'closed_at' => ['nullable', 'date'],
         ]);
@@ -114,6 +119,70 @@ class TicketController extends ApiController
         $record->update($validated);
 
         return $this->buildResponse($record->fresh()->toArray(), $request, 200);
+    }
+
+    /**
+     * Get the activity timeline for a ticket.
+     *
+     * GET /api/helpdesk/tickets/{id}/activity
+     */
+    public function activity(Request $request, string $id): Response
+    {
+        $modelClass = $this->getModel();
+        $record = $modelClass::find($id);
+
+        if (!$record) {
+            return $this->buildResponse([
+                'error' => ['message' => 'Record not found', 'status' => 404],
+            ], $request, Response::HTTP_NOT_FOUND);
+        }
+
+        $log = $record->activityLog()->with('user')->get();
+
+        return $this->buildResponse($log->toArray(), $request, Response::HTTP_OK);
+    }
+
+    /**
+     * Merge a ticket into another ticket.
+     *
+     * POST /api/helpdesk/tickets/{id}/merge
+     */
+    public function merge(Request $request, string $id): Response
+    {
+        $validated = $request->validate([
+            'target_ticket_id' => ['required', 'integer', 'exists:helpdesk_tickets,id'],
+        ]);
+
+        $modelClass = $this->getModel();
+
+        $source = $modelClass::find($id);
+        $target = $modelClass::find($validated['target_ticket_id']);
+
+        if (!$source || !$target) {
+            return $this->buildResponse([
+                'error' => ['message' => 'Ticket not found', 'status' => 404],
+            ], $request, Response::HTTP_NOT_FOUND);
+        }
+
+        if ($source->id === $target->id) {
+            return $this->buildResponse([
+                'error' => ['message' => 'Cannot merge a ticket into itself', 'status' => 422],
+            ], $request, Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        if ($source->isMerged()) {
+            return $this->buildResponse([
+                'error' => ['message' => 'Ticket has already been merged', 'status' => 422],
+            ], $request, Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $source->mergeInto($target);
+
+        return $this->buildResponse([
+            'message' => "Ticket {$source->reference} merged into {$target->reference}",
+            'source' => $source->fresh()->toArray(),
+            'target' => $target->fresh()->toArray(),
+        ], $request, Response::HTTP_OK);
     }
 
     /**

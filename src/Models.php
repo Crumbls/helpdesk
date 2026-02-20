@@ -8,11 +8,15 @@ use App\Models\User;
 use Crumbls\HelpDesk\Models\CustomField;
 use Crumbls\HelpDesk\Models\Department;
 use Crumbls\HelpDesk\Models\Priority;
+use Crumbls\HelpDesk\Models\SatisfactionRating;
 use Crumbls\HelpDesk\Models\Ticket;
 use Crumbls\HelpDesk\Models\TicketAssignment;
 use Crumbls\HelpDesk\Models\TicketComment;
 use Crumbls\HelpDesk\Models\TicketStatus;
 use Crumbls\HelpDesk\Models\TicketType;
+use Crumbls\HelpDesk\Models\CannedResponse;
+use Crumbls\HelpDesk\Models\ActivityLog;
+use Crumbls\HelpDesk\Models\Attachment;
 
 class Models {
 	/**
@@ -93,4 +97,32 @@ class Models {
 		});
 	}
 
+	/**
+	 * @return string
+	 */
+	public static function satisfactionRating(): string
+	{
+		return config('helpdesk.models.satisfaction_rating', SatisfactionRating::class);
+	}
+
+	/**
+	 * @return string
+	 */
+	public static function cannedResponse(): string
+	{
+		return config('helpdesk.models.canned_response', CannedResponse::class);
+	}
+
+	/**
+	 * @return string
+	 */
+	public static function attachment(): string
+	{
+		return config('helpdesk.models.attachment', Attachment::class);
+	}
+
+	public static function activityLog(): string
+	{
+		return config('helpdesk.models.activity_log', ActivityLog::class);
+	}
 }

@@ -29,6 +29,15 @@ abstract class TestCase extends BaseTestCase
 
         $app['config']->set('helpdesk.api.enabled', true);
         $app['config']->set('helpdesk.api.middleware', ['web']);
+
+        $app['config']->set('helpdesk.guest.enabled', true);
+        $app['config']->set('helpdesk.guest.middleware', ['web']);
+        $app['config']->set('helpdesk.notifications.enabled', true);
+        $app['config']->set('helpdesk.events.enabled', true);
+        $app['config']->set('helpdesk.models.user', \Crumbls\HelpDesk\Tests\Fixtures\User::class);
+        $app['config']->set('helpdesk.attachments.enabled', true);
+        $app['config']->set('helpdesk.attachments.max_size_kb', 10240);
+        $app['config']->set('helpdesk.attachments.allowed_mimes', ['jpg', 'png', 'pdf']);
     }
 
     protected function defineDatabaseMigrations(): void
@@ -37,6 +46,7 @@ abstract class TestCase extends BaseTestCase
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
+            $table->string('password')->nullable();
             $table->timestamps();
         });
 

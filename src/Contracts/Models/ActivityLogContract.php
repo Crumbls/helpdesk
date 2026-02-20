@@ -5,13 +5,10 @@ declare(strict_types=1);
 namespace Crumbls\HelpDesk\Contracts\Models;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 
-interface TicketCommentContract
+interface ActivityLogContract
 {
     public function ticket(): BelongsTo;
 
     public function user(): BelongsTo;
-
-    public function attachments(): MorphMany;
 }

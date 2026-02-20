@@ -7,6 +7,8 @@ namespace Crumbls\HelpDesk\Contracts\Models;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 interface TicketContract
 {
@@ -37,4 +39,8 @@ interface TicketContract
     public function publicComments(): HasMany;
 
     public function privateComments(): HasMany;
+
+    public function satisfactionRating(): HasOne;
+
+    public function attachments(): MorphMany;
 }

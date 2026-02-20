@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Ticket extends Model implements TicketContract
@@ -30,6 +32,14 @@ class Ticket extends Model implements TicketContract
     protected static function booted(): void
     {
         static::creating(function (Ticket $ticket) {
+            // Generate reference number.
+            if (empty($ticket->reference)) {
+                $prefix = config('helpdesk.reference.prefix', 'HD');
+                $pad = config('helpdesk.reference.pad', 5);
+                $lastId = (int) static::withTrashed()->max('id');
+                $ticket->reference = $prefix . '-' . str_pad((string) ($lastId + 1), $pad, '0', STR_PAD_LEFT);
+            }
+
             if (empty($ticket->ticket_status_id)) {
                 $statusClass = Models::status();
                 $default = $statusClass::where('is_default', true)->first();
@@ -93,16 +103,24 @@ class Ticket extends Model implements TicketContract
     protected $table = 'helpdesk_tickets';
 
     protected $fillable = [
+        'reference',
         'ticket_type_id',
         'ticket_status_id',
         'submitter_id',
+        'submitter_name',
+        'submitter_email',
+        'submitter_phone',
+        'submitter_company',
         'department_id',
         'priority_id',
         'parent_ticket_id',
+        'merged_into_ticket_id',
+        'merged_at',
         'title',
         'description',
         'resolution',
         'source',
+        'metadata',
         'due_at',
         'closed_at',
         'first_response_at',
@@ -113,8 +131,10 @@ class Ticket extends Model implements TicketContract
     ];
 
     protected $casts = [
+        'metadata' => 'array',
         'due_at' => 'datetime',
         'closed_at' => 'datetime',
+        'merged_at' => 'datetime',
         'first_response_at' => 'datetime',
         'sla_response_due_at' => 'datetime',
         'sla_resolution_due_at' => 'datetime',
@@ -192,5 +212,79 @@ class Ticket extends Model implements TicketContract
     public function privateComments(): HasMany
     {
         return $this->hasMany(TicketComment::class)->where('is_private', true);
+    }
+
+    public function satisfactionRating(): HasOne
+    {
+        return $this->hasOne(SatisfactionRating::class);
+    }
+
+    public function attachments(): MorphMany
+    {
+        return $this->morphMany(Models::attachment(), 'attachable');
+    }
+
+    public function activityLog(): HasMany
+    {
+        return $this->hasMany(ActivityLog::class)->orderBy('created_at');
+    }
+
+    public function mergedInto(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'merged_into_ticket_id');
+    }
+
+    public function mergedTickets(): HasMany
+    {
+        return $this->hasMany(self::class, 'merged_into_ticket_id');
+    }
+
+    /**
+     * Check if this ticket has been merged into another.
+     */
+    public function isMerged(): bool
+    {
+        return $this->merged_into_ticket_id !== null;
+    }
+
+    /**
+     * Merge this ticket into a target ticket.
+     * Moves comments, updates status, logs the activity.
+     */
+    public function mergeInto(self $target): void
+    {
+        $commentClass = Models::comment();
+
+        // Move all comments to the target ticket.
+        $commentClass::where('ticket_id', $this->id)->update(['ticket_id' => $target->id]);
+
+        // Move attachments to target.
+        $attachmentClass = Models::attachment();
+        $attachmentClass::where('attachable_type', static::class)
+            ->where('attachable_id', $this->id)
+            ->update(['attachable_id' => $target->id]);
+
+        // Mark this ticket as merged.
+        $this->update([
+            'merged_into_ticket_id' => $target->id,
+            'merged_at' => now(),
+        ]);
+
+        // Log on both tickets.
+        ActivityLog::log(
+            ticketId: $this->id,
+            type: 'merged',
+            description: "Merged into {$target->reference}",
+            userId: auth()->id(),
+            metadata: ['target_ticket_id' => $target->id, 'target_reference' => $target->reference],
+        );
+
+        ActivityLog::log(
+            ticketId: $target->id,
+            type: 'merged',
+            description: "Ticket {$this->reference} merged into this ticket",
+            userId: auth()->id(),
+            metadata: ['source_ticket_id' => $this->id, 'source_reference' => $this->reference],
+        );
     }
 }
