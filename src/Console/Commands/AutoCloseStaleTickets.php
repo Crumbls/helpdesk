@@ -16,16 +16,18 @@ class AutoCloseStaleTickets extends Command
 
     public function handle(): int
     {
-        if (!config('helpdesk.auto_close.enabled', false)) {
+        if (! config('helpdesk.auto_close.enabled', false)) {
             $this->warn('Auto-close is disabled in config.');
+
             return Command::SUCCESS;
         }
 
         $days = (int) config('helpdesk.auto_close.days', 14);
         $closedStatusId = config('helpdesk.auto_close.closed_status_id');
 
-        if (!$closedStatusId) {
+        if (! $closedStatusId) {
             $this->error('Auto-close closed_status_id is not set in config.');
+
             return Command::FAILURE;
         }
 
@@ -36,8 +38,9 @@ class AutoCloseStaleTickets extends Command
         // Verify the closed status exists.
         $closedStatus = $statusClass::find($closedStatusId);
 
-        if (!$closedStatus) {
+        if (! $closedStatus) {
             $this->error("Closed status ID {$closedStatusId} not found.");
+
             return Command::FAILURE;
         }
 

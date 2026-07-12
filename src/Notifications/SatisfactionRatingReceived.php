@@ -28,7 +28,7 @@ class SatisfactionRatingReceived extends Notification implements ShouldQueue
         $rating = $this->rating;
         $ticket = $rating->ticket;
 
-        return (new MailMessage())
+        return (new MailMessage)
             ->subject(__('helpdesk::notifications.satisfaction_rating.subject', [
                 'id' => $ticket->id,
                 'title' => $ticket->title,

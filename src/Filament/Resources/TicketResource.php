@@ -4,63 +4,59 @@ declare(strict_types=1);
 
 namespace Crumbls\HelpDesk\Filament\Resources;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
-use Filament\Schemas\Components\Grid;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\Toggle;
-use Filament\Actions\Action;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Actions\EditAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Crumbls\HelpDesk\Filament\Resources\TicketResource\Pages\ListTickets;
+use Carbon\Carbon;
 use Crumbls\HelpDesk\Filament\Resources\TicketResource\Pages\CreateTicket;
 use Crumbls\HelpDesk\Filament\Resources\TicketResource\Pages\EditTicket;
-use Carbon\Carbon;
+use Crumbls\HelpDesk\Filament\Resources\TicketResource\Pages\ListTickets;
 use Crumbls\HelpDesk\Models;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Actions\Action;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
 class TicketResource extends Resource
 {
-	public static function getModelLabel(): string
-	{
-		return __('helpdesk::tickets.label');
-	}
+    public static function getModelLabel(): string
+    {
+        return __('helpdesk::tickets.label');
+    }
 
-	public static function getPluralModelLabel(): string
-	{
-		return __('helpdesk::tickets.plural');
-	}
+    public static function getPluralModelLabel(): string
+    {
+        return __('helpdesk::tickets.plural');
+    }
 
-	public static function getNavigationGroup(): ?string
-	{
-		return __(config('helpdesk.filament.navigation_group', 'Helpdesk'));
-	}
+    public static function getNavigationGroup(): ?string
+    {
+        return __(config('helpdesk.filament.navigation_group', 'Helpdesk'));
+    }
 
-	protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-ticket';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-ticket';
 
-	public static function getNavigationSort(): ?int
-	{
-		return config('helpdesk.filament.resources.ticket.sort', 100);
-	}
+    public static function getNavigationSort(): ?int
+    {
+        return config('helpdesk.filament.resources.ticket.sort', 100);
+    }
 
-	public static function getModel(): string
+    public static function getModel(): string
     {
         return Models::ticket();
     }
@@ -160,20 +156,17 @@ class TicketResource extends Resource
                                     ->schema([
                                         Placeholder::make('user_display')
                                             ->label('Author')
-                                            ->content(fn ($record): string =>
-                                                $record?->user?->name ?? 'You'
+                                            ->content(fn ($record): string => $record?->user?->name ?? 'You'
                                             ),
 
                                         Placeholder::make('created_display')
                                             ->label('Posted')
-                                            ->content(fn ($record): string =>
-                                                $record?->created_at?->format('M j, Y g:i A') ?? '-'
+                                            ->content(fn ($record): string => $record?->created_at?->format('M j, Y g:i A') ?? '-'
                                             ),
 
                                         Placeholder::make('updated_display')
                                             ->label('Last Updated')
-                                            ->content(fn ($record): string =>
-                                                $record?->updated_at?->diffForHumans() ?? '-'
+                                            ->content(fn ($record): string => $record?->updated_at?->diffForHumans() ?? '-'
                                             ),
                                     ])
                                     ->visible(fn ($record): bool => $record !== null),
@@ -204,6 +197,7 @@ class TicketResource extends Resource
                             ])
                             ->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
                                 $data['user_id'] = auth()->id();
+
                                 return $data;
                             })
                             ->reorderable(false)
@@ -227,12 +221,12 @@ class TicketResource extends Resource
                                     ? Str::limit(strip_tags($state['content']), 50)
                                     : null;
 
-                                if (!$date && !$preview) {
+                                if (! $date && ! $preview) {
                                     return 'New Comment';
                                 }
 
                                 $label = $flags->isNotEmpty()
-                                    ? '[' . $flags->join(', ') . '] '
+                                    ? '['.$flags->join(', ').'] '
                                     : '';
 
                                 $label .= $date ?? '';

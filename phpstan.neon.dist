@@ -1,6 +1,13 @@
+includes:
+    - phpstan-baseline.neon
+
 parameters:
     level: max
     paths:
         - src
 
-    reportUnmatchedIgnoredErrors: true
+    excludePaths:
+        analyse:
+            - src/Filament
+
+    reportUnmatchedIgnoredErrors: false

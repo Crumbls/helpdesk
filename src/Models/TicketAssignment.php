@@ -17,6 +17,13 @@ class TicketAssignment extends Model implements TicketAssignmentContract
         'role',
     ];
 
+    protected static function booted(): void
+    {
+        static::created(function (TicketAssignment $assignment) {
+            $assignment->ticket?->touchActivity($assignment->created_at ?? now());
+        });
+    }
+
     public function ticket(): BelongsTo
     {
         return $this->belongsTo(Ticket::class);

@@ -96,8 +96,9 @@ class SlaService implements SlaCalculator
         $remainingHours = $hours;
 
         while ($remainingHours > 0) {
-            if (!in_array($date->dayOfWeek, $workDays)) {
+            if (! in_array($date->dayOfWeek, $workDays)) {
                 $date->addDay()->setTime($dayStartHour, $dayStartMinute);
+
                 continue;
             }
 
@@ -110,6 +111,7 @@ class SlaService implements SlaCalculator
 
             if ($date->gte($currentDayEnd)) {
                 $date->addDay()->setTime($dayStartHour, $dayStartMinute);
+
                 continue;
             }
 

@@ -14,7 +14,7 @@ class SendTicketAssignedNotification implements ShouldQueue
     {
         $config = config('helpdesk.notifications', []);
 
-        if (!($config['agent_ticket_assigned'] ?? true)) {
+        if (! ($config['agent_ticket_assigned'] ?? true)) {
             return;
         }
 

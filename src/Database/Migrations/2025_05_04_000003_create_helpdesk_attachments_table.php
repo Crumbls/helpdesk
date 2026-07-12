@@ -1,5 +1,6 @@
 <?php
 
+use Crumbls\HelpDesk\Support\UserForeignKey;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -15,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('attachable_id');
             $table->string('attachable_type');
-            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
+            UserForeignKey::add($table, 'user_id', nullable: true, onDelete: 'null');
             $table->string('filename');
             $table->string('original_filename');
             $table->string('mime_type');

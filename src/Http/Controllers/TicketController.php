@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace Crumbls\HelpDesk\Http\Controllers;
 
 use Crumbls\HelpDesk\Models;
+use Crumbls\HelpDesk\Models\CustomField;
+use Crumbls\HelpDesk\Services\AssignmentService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response;
 
 class TicketController extends ApiController
@@ -13,6 +17,68 @@ class TicketController extends ApiController
     public function getModel(): string
     {
         return Models::ticket();
+    }
+
+    public function index(Request $request): Response
+    {
+        $modelClass = $this->getModel();
+
+        $query = $modelClass::query()
+            ->orderByDesc('last_activity_at')
+            ->orderByDesc('id');
+
+        foreach (['department_id', 'priority_id', 'ticket_status_id', 'ticket_type_id'] as $filter) {
+            if ($request->filled($filter)) {
+                $query->where($filter, $request->input($filter));
+            }
+        }
+
+        $assignedToUserId = $request->input('assigned_to');
+
+        if ($request->input('queue') === 'assigned_to_me') {
+            $assignedToUserId = $request->input('user_id', $request->user()?->getAuthIdentifier());
+        }
+
+        if ($assignedToUserId !== null && $assignedToUserId !== '') {
+            $userClass = Models::user();
+            $user = new $userClass;
+            $qualifiedUserKey = $user->getTable().'.'.$user->getKeyName();
+
+            $query->whereHas('assignedUsers', function (Builder $assignedQuery) use ($assignedToUserId, $qualifiedUserKey) {
+                $assignedQuery->where($qualifiedUserKey, $assignedToUserId);
+            });
+        } elseif ($request->input('queue') === 'assigned_to_me') {
+            $query->whereRaw('1 = 0');
+        }
+
+        match ($request->input('queue')) {
+            'open' => $query->whereHas('status', function (Builder $statusQuery) {
+                $statusQuery->where('is_closed', false);
+            }),
+            'closed' => $query->whereHas('status', function (Builder $statusQuery) {
+                $statusQuery->where('is_closed', true);
+            }),
+            'unassigned' => $query->whereDoesntHave('assignees'),
+            default => null,
+        };
+
+        if ($request->filled('unread_for')) {
+            $userId = $request->input('unread_for');
+
+            $query->where(function (Builder $query) use ($userId) {
+                $query
+                    ->whereDoesntHave('reads', function (Builder $readQuery) use ($userId) {
+                        $readQuery->where('user_id', $userId);
+                    })
+                    ->orWhereHas('reads', function (Builder $readQuery) use ($userId) {
+                        $readQuery
+                            ->where('user_id', $userId)
+                            ->whereColumn('last_read_at', '<', 'helpdesk_tickets.last_activity_at');
+                    });
+            });
+        }
+
+        return $this->buildResponse($query->paginate()->toArray(), $request, Response::HTTP_OK);
     }
 
     /**
@@ -38,6 +104,7 @@ class TicketController extends ApiController
             'resolution' => ['nullable', 'string'],
             'source' => ['nullable', 'string', 'max:255'],
             'metadata' => ['nullable', 'array'],
+            'custom_fields' => ['nullable', 'array'],
             'due_at' => ['nullable', 'date'],
             'closed_at' => ['nullable', 'date'],
         ]);
@@ -46,7 +113,7 @@ class TicketController extends ApiController
             $statusClass = Models::status();
             $defaultStatus = $statusClass::where('is_default', true)->first();
 
-            if (!$defaultStatus) {
+            if (! $defaultStatus) {
                 return $this->buildResponse([
                     'error' => [
                         'message' => 'No default status configured',
@@ -62,7 +129,7 @@ class TicketController extends ApiController
             $typeClass = Models::type();
             $defaultType = $typeClass::where('is_default', true)->first();
 
-            if (!$defaultType) {
+            if (! $defaultType) {
                 return $this->buildResponse([
                     'error' => [
                         'message' => 'No default type configured',
@@ -73,6 +140,12 @@ class TicketController extends ApiController
 
             $validated['ticket_type_id'] = $defaultType->id;
         }
+
+        CustomField::validateTicketValues(
+            $validated['department_id'] ?? null,
+            $validated['ticket_type_id'] ?? null,
+            $validated,
+        );
 
         $modelClass = $this->getModel();
 
@@ -92,7 +165,7 @@ class TicketController extends ApiController
 
         $record = $modelClass::find($id);
 
-        if (!$record) {
+        if (! $record) {
             return $this->buildResponse([
                 'error' => [
                     'message' => 'Record not found',
@@ -112,9 +185,27 @@ class TicketController extends ApiController
             'description' => ['sometimes', 'required', 'string'],
             'resolution' => ['nullable', 'string'],
             'source' => ['nullable', 'string', 'max:255'],
+            'metadata' => ['nullable', 'array'],
+            'custom_fields' => ['nullable', 'array'],
             'due_at' => ['nullable', 'date'],
             'closed_at' => ['nullable', 'date'],
         ]);
+
+        $contextChanged = array_key_exists('department_id', $validated)
+            || array_key_exists('ticket_type_id', $validated);
+        $customFieldsChanged = array_key_exists('custom_fields', $validated);
+
+        if ($contextChanged || $customFieldsChanged) {
+            $validated['custom_fields'] = $customFieldsChanged
+                ? array_replace($record->custom_fields ?? [], $validated['custom_fields'] ?? [])
+                : ($record->custom_fields ?? []);
+
+            CustomField::validateTicketValues(
+                $validated['department_id'] ?? $record->department_id,
+                $validated['ticket_type_id'] ?? $record->ticket_type_id,
+                $validated,
+            );
+        }
 
         $record->update($validated);
 
@@ -131,7 +222,7 @@ class TicketController extends ApiController
         $modelClass = $this->getModel();
         $record = $modelClass::find($id);
 
-        if (!$record) {
+        if (! $record) {
             return $this->buildResponse([
                 'error' => ['message' => 'Record not found', 'status' => 404],
             ], $request, Response::HTTP_NOT_FOUND);
@@ -140,6 +231,146 @@ class TicketController extends ApiController
         $log = $record->activityLog()->with('user')->get();
 
         return $this->buildResponse($log->toArray(), $request, Response::HTTP_OK);
+    }
+
+    public function markRead(Request $request, string $id): Response
+    {
+        $modelClass = $this->getModel();
+        $record = $modelClass::find($id);
+
+        if (! $record) {
+            return $this->buildResponse([
+                'error' => ['message' => 'Record not found', 'status' => Response::HTTP_NOT_FOUND],
+            ], $request, Response::HTTP_NOT_FOUND);
+        }
+
+        $userId = $request->input('user_id', $request->user()?->getAuthIdentifier());
+
+        if ($userId === null || $userId === '') {
+            return $this->buildResponse([
+                'error' => [
+                    'message' => 'A user_id is required when no authenticated user is available',
+                    'status' => Response::HTTP_UNPROCESSABLE_ENTITY,
+                ],
+            ], $request, Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $read = $record->markReadBy($userId);
+
+        return $this->buildResponse([
+            'message' => 'Ticket marked read',
+            'ticket_id' => $record->id,
+            'user_id' => $userId,
+            'last_read_at' => $read->last_read_at?->toISOString(),
+        ], $request, Response::HTTP_OK);
+    }
+
+    public function markUnread(Request $request, string $id): Response
+    {
+        $modelClass = $this->getModel();
+        $record = $modelClass::find($id);
+
+        if (! $record) {
+            return $this->buildResponse([
+                'error' => ['message' => 'Record not found', 'status' => Response::HTTP_NOT_FOUND],
+            ], $request, Response::HTTP_NOT_FOUND);
+        }
+
+        $userId = $request->input('user_id', $request->user()?->getAuthIdentifier());
+
+        if ($userId === null || $userId === '') {
+            return $this->buildResponse([
+                'error' => [
+                    'message' => 'A user_id is required when no authenticated user is available',
+                    'status' => Response::HTTP_UNPROCESSABLE_ENTITY,
+                ],
+            ], $request, Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $record->markUnreadBy($userId);
+
+        return $this->buildResponse([
+            'message' => 'Ticket marked unread',
+            'ticket_id' => $record->id,
+            'user_id' => $userId,
+        ], $request, Response::HTTP_OK);
+    }
+
+    public function assign(Request $request, string $id, AssignmentService $assignments): Response
+    {
+        $modelClass = $this->getModel();
+        $record = $modelClass::find($id);
+
+        if (! $record) {
+            return $this->buildResponse([
+                'error' => ['message' => 'Record not found', 'status' => Response::HTTP_NOT_FOUND],
+            ], $request, Response::HTTP_NOT_FOUND);
+        }
+
+        $validated = $request->validate([
+            'user_id' => ['nullable'],
+            'role' => ['sometimes', 'string', 'max:50'],
+            'strategy' => ['sometimes', Rule::in(['direct', 'least_loaded', 'round_robin'])],
+            'department_id' => ['nullable', 'integer', 'exists:helpdesk_departments,id'],
+        ]);
+
+        $strategy = $validated['strategy'] ?? 'direct';
+        $role = $validated['role'] ?? 'assignee';
+        $userId = $validated['user_id'] ?? null;
+
+        if ($strategy !== 'direct') {
+            $departmentId = $validated['department_id'] ?? $record->department_id;
+            $departmentClass = Models::department();
+            $department = $departmentId ? $departmentClass::find($departmentId) : null;
+            $userIds = $department
+                ? $department->users()->get()->map(fn (object $user): mixed => $user->getKey())->all()
+                : [];
+
+            $userId = $strategy === 'least_loaded'
+                ? $assignments->leastLoaded($userIds)
+                : $assignments->roundRobin($userIds, "department:{$departmentId}");
+        }
+
+        if ($userId === null || $userId === '') {
+            return $this->buildResponse([
+                'error' => [
+                    'message' => 'No assignable user was found',
+                    'status' => Response::HTTP_UNPROCESSABLE_ENTITY,
+                ],
+            ], $request, Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $assignment = $assignments->assign($record, $userId, $role);
+
+        return $this->buildResponse([
+            'message' => 'Ticket assigned',
+            'assignment' => method_exists($assignment, 'toArray') ? $assignment->toArray() : [],
+        ], $request, Response::HTTP_OK);
+    }
+
+    public function unassign(Request $request, string $id, AssignmentService $assignments): Response
+    {
+        $modelClass = $this->getModel();
+        $record = $modelClass::find($id);
+
+        if (! $record) {
+            return $this->buildResponse([
+                'error' => ['message' => 'Record not found', 'status' => Response::HTTP_NOT_FOUND],
+            ], $request, Response::HTTP_NOT_FOUND);
+        }
+
+        $validated = $request->validate([
+            'user_id' => ['required'],
+            'role' => ['sometimes', 'string', 'max:50'],
+        ]);
+
+        $assignments->unassign($record, $validated['user_id'], $validated['role'] ?? 'assignee');
+
+        return $this->buildResponse([
+            'message' => 'Ticket unassigned',
+            'ticket_id' => $record->id,
+            'user_id' => $validated['user_id'],
+        ], $request, Response::HTTP_OK);
     }
 
     /**
@@ -158,7 +389,7 @@ class TicketController extends ApiController
         $source = $modelClass::find($id);
         $target = $modelClass::find($validated['target_ticket_id']);
 
-        if (!$source || !$target) {
+        if (! $source || ! $target) {
             return $this->buildResponse([
                 'error' => ['message' => 'Ticket not found', 'status' => 404],
             ], $request, Response::HTTP_NOT_FOUND);
@@ -196,7 +427,7 @@ class TicketController extends ApiController
 
         $record = $modelClass::find($id);
 
-        if (!$record) {
+        if (! $record) {
             return $this->buildResponse([
                 'error' => [
                     'message' => 'Record not found',

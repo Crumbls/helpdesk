@@ -36,18 +36,18 @@ class TicketStatusUpdated extends Notification implements ShouldQueue
         $oldStatus = $statusClass::find($this->oldStatusId);
         $newStatus = $statusClass::find($this->newStatusId);
 
-        return (new MailMessage())
+        return (new MailMessage)
             ->subject(__('helpdesk::notifications.ticket_status_updated.subject', [
                 'id' => $ticket->id,
-                'status' => $newStatus?->name ?? 'Unknown',
+                'status' => $newStatus?->title ?? 'Unknown',
             ]))
             ->greeting(__('helpdesk::notifications.ticket_status_updated.greeting', [
                 'name' => $notifiable->name,
             ]))
             ->line(__('helpdesk::notifications.ticket_status_updated.line1', [
                 'title' => $ticket->title,
-                'old' => $oldStatus?->name ?? 'Unknown',
-                'new' => $newStatus?->name ?? 'Unknown',
+                'old' => $oldStatus?->title ?? 'Unknown',
+                'new' => $newStatus?->title ?? 'Unknown',
             ]));
     }
 

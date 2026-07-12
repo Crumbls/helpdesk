@@ -46,7 +46,7 @@ class CannedResponseController extends ApiController
         $modelClass = $this->getModel();
         $record = $modelClass::with('department')->find($id);
 
-        if (!$record) {
+        if (! $record) {
             return $this->buildResponse([
                 'error' => [
                     'message' => 'Canned response not found',

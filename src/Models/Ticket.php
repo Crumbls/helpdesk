@@ -10,6 +10,7 @@ use Crumbls\HelpDesk\Events\TicketDeleted;
 use Crumbls\HelpDesk\Events\TicketStatusChanged;
 use Crumbls\HelpDesk\Events\TicketUpdated;
 use Crumbls\HelpDesk\Models;
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -32,14 +33,6 @@ class Ticket extends Model implements TicketContract
     protected static function booted(): void
     {
         static::creating(function (Ticket $ticket) {
-            // Generate reference number.
-            if (empty($ticket->reference)) {
-                $prefix = config('helpdesk.reference.prefix', 'HD');
-                $pad = config('helpdesk.reference.pad', 5);
-                $lastId = (int) static::withTrashed()->max('id');
-                $ticket->reference = $prefix . '-' . str_pad((string) ($lastId + 1), $pad, '0', STR_PAD_LEFT);
-            }
-
             if (empty($ticket->ticket_status_id)) {
                 $statusClass = Models::status();
                 $default = $statusClass::where('is_default', true)->first();
@@ -68,9 +61,19 @@ class Ticket extends Model implements TicketContract
                     $ticket->sla_resolution_due_at = $sla->calculateResolutionDue($ticket->priority_id, $now);
                 }
             }
+
+            if (empty($ticket->last_activity_at)) {
+                $ticket->last_activity_at = now();
+            }
         });
 
         static::created(function (Ticket $ticket) {
+            if (empty($ticket->reference)) {
+                $ticket->forceFill([
+                    'reference' => static::referenceForId((int) $ticket->id),
+                ])->saveQuietly();
+            }
+
             if (config('helpdesk.events.enabled') && config('helpdesk.events.dispatch.ticket_created')) {
                 event(new TicketCreated($ticket));
             }
@@ -90,6 +93,10 @@ class Ticket extends Model implements TicketContract
                     $ticket->getOriginal('ticket_status_id'),
                     $ticket->ticket_status_id
                 ));
+            }
+
+            if (! $ticket->wasChanged('last_activity_at')) {
+                $ticket->touchActivity($ticket->updated_at ?? now());
             }
         });
 
@@ -121,8 +128,10 @@ class Ticket extends Model implements TicketContract
         'resolution',
         'source',
         'metadata',
+        'custom_fields',
         'due_at',
         'closed_at',
+        'last_activity_at',
         'first_response_at',
         'sla_response_due_at',
         'sla_resolution_due_at',
@@ -132,8 +141,10 @@ class Ticket extends Model implements TicketContract
 
     protected $casts = [
         'metadata' => 'array',
+        'custom_fields' => 'array',
         'due_at' => 'datetime',
         'closed_at' => 'datetime',
+        'last_activity_at' => 'datetime',
         'merged_at' => 'datetime',
         'first_response_at' => 'datetime',
         'sla_response_due_at' => 'datetime',
@@ -141,6 +152,14 @@ class Ticket extends Model implements TicketContract
         'sla_response_breached' => 'boolean',
         'sla_resolution_breached' => 'boolean',
     ];
+
+    public static function referenceForId(int $id): string
+    {
+        $prefix = config('helpdesk.reference.prefix', 'HD');
+        $pad = config('helpdesk.reference.pad', 5);
+
+        return $prefix.'-'.str_pad((string) $id, (int) $pad, '0', STR_PAD_LEFT);
+    }
 
     public function type(): BelongsTo
     {
@@ -229,6 +248,11 @@ class Ticket extends Model implements TicketContract
         return $this->hasMany(ActivityLog::class)->orderBy('created_at');
     }
 
+    public function reads(): HasMany
+    {
+        return $this->hasMany(Models::ticketRead());
+    }
+
     public function mergedInto(): BelongsTo
     {
         return $this->belongsTo(self::class, 'merged_into_ticket_id');
@@ -245,6 +269,46 @@ class Ticket extends Model implements TicketContract
     public function isMerged(): bool
     {
         return $this->merged_into_ticket_id !== null;
+    }
+
+    public function markReadBy(int|string $userId, ?DateTimeInterface $readAt = null): TicketRead
+    {
+        /** @var TicketRead $read */
+        $read = $this->reads()->updateOrCreate(
+            ['user_id' => $userId],
+            ['last_read_at' => $readAt ?? now()],
+        );
+
+        return $read;
+    }
+
+    public function markUnreadBy(int|string $userId): void
+    {
+        $this->reads()
+            ->where('user_id', $userId)
+            ->delete();
+    }
+
+    public function isUnreadFor(int|string $userId): bool
+    {
+        $lastActivityAt = $this->last_activity_at ?? $this->updated_at ?? $this->created_at;
+
+        if (! $lastActivityAt) {
+            return false;
+        }
+
+        $read = $this->reads()
+            ->where('user_id', $userId)
+            ->first();
+
+        return ! $read || $read->last_read_at->lt($lastActivityAt);
+    }
+
+    public function touchActivity(?DateTimeInterface $activityAt = null): void
+    {
+        $this->forceFill([
+            'last_activity_at' => $activityAt ?? now(),
+        ])->saveQuietly();
     }
 
     /**

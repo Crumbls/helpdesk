@@ -13,29 +13,28 @@ abstract class ApiController extends Controller
 {
     abstract public function getModel(): string;
 
-	public function __construct()
-	{
-		$snakeName = Str::snake(class_basename($this->getModel()));
-		if (config("helpdesk.api.{$snakeName}.policy")) {
-			$camelName = Str::camel(class_basename($this->getModel()));
-			$this->authorizeResource(Models::$camelName(), $snakeName);
-		}
-	}
+    public function __construct()
+    {
+        $snakeName = Str::snake(class_basename($this->getModel()));
+        if (config("helpdesk.api.{$snakeName}.policy")) {
+            $camelName = Str::camel(class_basename($this->getModel()));
+            $this->authorizeResource(Models::$camelName(), $snakeName);
+        }
+    }
 
+    /**
+     * Display a listing of priorities.
+     *
+     * @see docs/api-priorities.md for curl examples
+     */
+    public function index(Request $request): Response
+    {
+        $modelClass = $this->getModel();
 
-	/**
-	 * Display a listing of priorities.
-	 *
-	 * @see docs/api-priorities.md for curl examples
-	 */
-	public function index(Request $request): Response
-	{
-		$modelClass = $this->getModel();
+        $query = $modelClass::query();
 
-		$query = $modelClass::query();
-
-		return $this->buildResponse($query->paginate()->toArray(), $request, 200);
-	}
+        return $this->buildResponse($query->paginate()->toArray(), $request, 200);
+    }
 
     /**
      * Display the specified resource.
@@ -46,7 +45,7 @@ abstract class ApiController extends Controller
 
         $record = $modelClass::find($id);
 
-        if (!$record) {
+        if (! $record) {
             return $this->buildResponse([
                 'error' => [
                     'message' => 'Record not found',

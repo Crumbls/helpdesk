@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace Crumbls\HelpDesk\Filament\Resources;
 
-use Crumbls\HelpDesk\Filament\Resources\CannedResponseResource\Pages\ListCannedResponses;
 use Crumbls\HelpDesk\Filament\Resources\CannedResponseResource\Pages\CreateCannedResponse;
 use Crumbls\HelpDesk\Filament\Resources\CannedResponseResource\Pages\EditCannedResponse;
+use Crumbls\HelpDesk\Filament\Resources\CannedResponseResource\Pages\ListCannedResponses;
 use Crumbls\HelpDesk\Models;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -21,14 +20,14 @@ use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
-use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
 
 class CannedResponseResource extends Resource
 {
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-chat-bubble-left-ellipsis';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chat-bubble-left-ellipsis';
 
     public static function getModelLabel(): string
     {

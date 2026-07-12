@@ -10,10 +10,10 @@ use Crumbls\HelpDesk\Events\SatisfactionRated;
 use Crumbls\HelpDesk\Events\TicketAssigned;
 use Crumbls\HelpDesk\Events\TicketCreated;
 use Crumbls\HelpDesk\Events\TicketStatusChanged;
-use Crumbls\HelpDesk\Listeners\SendCommentCreatedNotifications;
-use Crumbls\HelpDesk\Listeners\LogTicketActivity;
-use Crumbls\HelpDesk\Listeners\SendTicketAssignedNotification;
 use Crumbls\HelpDesk\Listeners\DispatchWebhook;
+use Crumbls\HelpDesk\Listeners\LogTicketActivity;
+use Crumbls\HelpDesk\Listeners\SendCommentCreatedNotifications;
+use Crumbls\HelpDesk\Listeners\SendTicketAssignedNotification;
 use Crumbls\HelpDesk\Listeners\SendTicketCreatedNotifications;
 use Crumbls\HelpDesk\Listeners\SendTicketStatusChangedNotifications;
 use Crumbls\HelpDesk\Services\SlaService;
@@ -28,29 +28,29 @@ class HelpDeskServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->loadMigrationsFrom(__DIR__ . '/Database/Migrations');
+        $this->loadMigrationsFrom(__DIR__.'/Database/Migrations');
 
-        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'helpdesk');
+        $this->loadViewsFrom(__DIR__.'/../resources/views', 'helpdesk');
 
-        $this->loadTranslationsFrom(__DIR__ . '/../resources/lang', 'helpdesk');
+        $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'helpdesk');
 
         $this->publishes([
-            __DIR__ . '/../config/helpdesk.php' => config_path('helpdesk.php'),
+            __DIR__.'/../config/helpdesk.php' => config_path('helpdesk.php'),
         ], 'helpdesk-config');
 
         $this->publishes([
-            __DIR__ . '/../resources/lang' => $this->app->langPath('vendor/helpdesk'),
+            __DIR__.'/../resources/lang' => $this->app->langPath('vendor/helpdesk'),
         ], 'helpdesk-translations');
 
         $this->publishes([
-            __DIR__ . '/Database/Migrations/' => database_path('migrations'),
+            __DIR__.'/Database/Migrations/' => database_path('migrations'),
         ], 'helpdesk-migrations');
 
         $this->publishes([
-            __DIR__ . '/../resources/views' => resource_path('views/vendor/helpdesk'),
+            __DIR__.'/../resources/views' => resource_path('views/vendor/helpdesk'),
         ], 'helpdesk-views');
 
-        $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+        $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
 
         $this->registerPolicies();
 
@@ -67,7 +67,7 @@ class HelpDeskServiceProvider extends ServiceProvider
         parent::register();
 
         $this->mergeConfigFrom(
-            __DIR__ . '/../config/helpdesk.php',
+            __DIR__.'/../config/helpdesk.php',
             'helpdesk'
         );
 
@@ -96,14 +96,12 @@ class HelpDeskServiceProvider extends ServiceProvider
      */
     protected function registerEventListeners(): void
     {
-        if (!config('helpdesk.notifications.enabled', true)) {
-            return;
+        if (config('helpdesk.notifications.enabled', true)) {
+            Event::listen(TicketCreated::class, SendTicketCreatedNotifications::class);
+            Event::listen(CommentCreated::class, SendCommentCreatedNotifications::class);
+            Event::listen(TicketStatusChanged::class, SendTicketStatusChangedNotifications::class);
+            Event::listen(TicketAssigned::class, SendTicketAssignedNotification::class);
         }
-
-        Event::listen(TicketCreated::class, SendTicketCreatedNotifications::class);
-        Event::listen(CommentCreated::class, SendCommentCreatedNotifications::class);
-        Event::listen(TicketStatusChanged::class, SendTicketStatusChangedNotifications::class);
-        Event::listen(TicketAssigned::class, SendTicketAssignedNotification::class);
 
         // Activity log.
         if (config('helpdesk.activity_log.enabled', true)) {
@@ -131,7 +129,7 @@ class HelpDeskServiceProvider extends ServiceProvider
         $this->app->bind(SlaCalculator::class, function ($app) {
             $serviceClass = config('helpdesk.sla.calculator', SlaService::class);
 
-            return new $serviceClass();
+            return new $serviceClass;
         });
 
         $this->app->alias(SlaCalculator::class, 'helpdesk.sla');

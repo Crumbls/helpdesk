@@ -14,6 +14,7 @@ class SlaBreached
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public const TYPE_RESPONSE = 'response';
+
     public const TYPE_RESOLUTION = 'resolution';
 
     public function __construct(

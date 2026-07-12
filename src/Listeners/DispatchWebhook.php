@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Log;
 class DispatchWebhook implements ShouldQueue
 {
     public int $tries = 3;
+
     public array $backoff = [10, 60, 300];
 
     public function handle(object $event): void
@@ -39,7 +40,7 @@ class DispatchWebhook implements ShouldQueue
         foreach ($webhooks as $webhook) {
             $allowedEvents = $webhook['events'] ?? ['*'];
 
-            if (!in_array('*', $allowedEvents) && !in_array($eventName, $allowedEvents)) {
+            if (! in_array('*', $allowedEvents) && ! in_array($eventName, $allowedEvents)) {
                 continue;
             }
 
@@ -82,14 +83,14 @@ class DispatchWebhook implements ShouldQueue
     protected function send(array $webhook, array $payload): void
     {
         $url = $webhook['url'] ?? null;
-        if (!$url) {
+        if (! $url) {
             return;
         }
 
         $headers = ['Content-Type' => 'application/json'];
 
         // HMAC signature for verification.
-        if (!empty($webhook['secret'])) {
+        if (! empty($webhook['secret'])) {
             $body = json_encode($payload);
             $headers['X-Helpdesk-Signature'] = hash_hmac('sha256', $body, $webhook['secret']);
         }

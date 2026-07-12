@@ -41,7 +41,7 @@ it('notifies submitter when ticket status changes', function () {
 
     config(['helpdesk.notifications.submitter_status_changed' => true]);
 
-    $listener = new SendTicketStatusChangedNotifications();
+    $listener = new SendTicketStatusChangedNotifications;
     $listener->handle(new TicketStatusChanged($ticket, $oldStatus->id, $newStatus->id));
 
     Notification::assertSentTo($submitter, TicketStatusUpdated::class);
@@ -54,7 +54,7 @@ it('does not notify when config toggle is off', function () {
     Notification::fake();
     config(['helpdesk.notifications.submitter_status_changed' => false]);
 
-    $listener = new SendTicketStatusChangedNotifications();
+    $listener = new SendTicketStatusChangedNotifications;
     $listener->handle(new TicketStatusChanged($ticket, $oldStatus->id, $newStatus->id));
 
     Notification::assertNothingSent();

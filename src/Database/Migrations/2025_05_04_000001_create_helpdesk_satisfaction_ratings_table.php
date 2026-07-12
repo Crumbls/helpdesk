@@ -1,5 +1,6 @@
 <?php
 
+use Crumbls\HelpDesk\Support\UserForeignKey;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -14,7 +15,7 @@ return new class extends Migration
         Schema::create('helpdesk_satisfaction_ratings', function (Blueprint $table) {
             $table->id();
             $table->foreignId('ticket_id')->unique()->constrained('helpdesk_tickets')->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            UserForeignKey::add($table, 'user_id');
             $table->tinyInteger('rating');
             $table->text('comment')->nullable();
             $table->timestamps();

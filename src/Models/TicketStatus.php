@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TicketStatus extends Model implements TicketStatusContract
 {
-    use HasFactory, SoftDeletes, HasColors;
+    use HasColors, HasFactory, SoftDeletes;
 
     protected $table = 'helpdesk_ticket_statuses';
 

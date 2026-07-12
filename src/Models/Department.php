@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Department extends Model implements DepartmentContract
 {
-    use HasFactory, SoftDeletes, HasColors;
+    use HasColors, HasFactory, SoftDeletes;
 
     protected static function newFactory()
     {
@@ -46,11 +46,11 @@ class Department extends Model implements DepartmentContract
         return $this->hasMany(Models::ticket(), 'department_id');
     }
 
-	public function users(): BelongsToMany
-	{
-		return $this->belongsToMany(Models::user(), 'helpdesk_department_user')
-			->using(DepartmentUser::class)
-			->withPivot(['role', 'assigned_only'])
-			->withTimestamps();
-	}
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(Models::user(), 'helpdesk_department_user')
+            ->using(DepartmentUser::class)
+            ->withPivot(['role', 'assigned_only'])
+            ->withTimestamps();
+    }
 }

@@ -1,5 +1,6 @@
 <?php
 
+use Crumbls\HelpDesk\Support\UserForeignKey;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -11,7 +12,7 @@ return new class extends Migration
         Schema::create('helpdesk_ticket_watchers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('ticket_id')->constrained('helpdesk_tickets')->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            UserForeignKey::add($table, 'user_id');
             $table->timestamps();
 
             $table->unique(['ticket_id', 'user_id']);

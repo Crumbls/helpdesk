@@ -22,7 +22,7 @@ return new class extends Migration
         DB::table('helpdesk_tickets')->whereNull('reference')->orderBy('id')->each(function ($ticket) use ($prefix, $pad) {
             DB::table('helpdesk_tickets')
                 ->where('id', $ticket->id)
-                ->update(['reference' => $prefix . '-' . str_pad((string) $ticket->id, $pad, '0', STR_PAD_LEFT)]);
+                ->update(['reference' => $prefix.'-'.str_pad((string) $ticket->id, $pad, '0', STR_PAD_LEFT)]);
         });
     }
 

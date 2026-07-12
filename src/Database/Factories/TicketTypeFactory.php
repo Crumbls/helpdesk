@@ -2,8 +2,8 @@
 
 namespace Crumbls\HelpDesk\Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use Crumbls\HelpDesk\Models\TicketType;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class TicketTypeFactory extends Factory
 {

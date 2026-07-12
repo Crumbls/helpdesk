@@ -19,7 +19,7 @@ class CommentPolicy implements CommentPolicyContract
 
     public function view($user, TicketCommentContract $comment): bool
     {
-        if (!$comment->is_private) {
+        if (! $comment->is_private) {
             return true;
         }
 

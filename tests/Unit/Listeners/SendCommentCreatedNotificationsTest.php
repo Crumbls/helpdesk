@@ -28,7 +28,7 @@ it('notifies admins when submitter comments publicly', function () {
         'is_private' => false,
     ]);
 
-    $listener = new SendCommentCreatedNotifications();
+    $listener = new SendCommentCreatedNotifications;
     $listener->handle(new CommentCreated($comment));
 
     Notification::assertSentTo($admin, AdminNewComment::class);
@@ -53,7 +53,7 @@ it('notifies submitter when agent comments publicly', function () {
         'is_private' => false,
     ]);
 
-    $listener = new SendCommentCreatedNotifications();
+    $listener = new SendCommentCreatedNotifications;
     $listener->handle(new CommentCreated($comment));
 
     Notification::assertSentTo($submitter, CommentReply::class);
@@ -76,7 +76,7 @@ it('only notifies admins on private comments', function () {
         'is_private' => true,
     ]);
 
-    $listener = new SendCommentCreatedNotifications();
+    $listener = new SendCommentCreatedNotifications;
     $listener->handle(new CommentCreated($comment));
 
     Notification::assertSentTo($admin, AdminNewComment::class);
@@ -101,7 +101,7 @@ it('excludes commenter from admin notifications', function () {
         'is_private' => false,
     ]);
 
-    $listener = new SendCommentCreatedNotifications();
+    $listener = new SendCommentCreatedNotifications;
     $listener->handle(new CommentCreated($comment));
 
     // Admin should be excluded since they're the commenter

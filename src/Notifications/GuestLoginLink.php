@@ -26,7 +26,7 @@ class GuestLoginLink extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage())
+        return (new MailMessage)
             ->subject(__('helpdesk::notifications.guest_login.subject', [
                 'ticket' => $this->ticket->title,
             ]))

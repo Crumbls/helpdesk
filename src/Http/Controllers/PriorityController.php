@@ -10,7 +10,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 class PriorityController extends ApiController
 {
-
     public function getModel(): string
     {
         return Models::priority();
@@ -35,7 +34,7 @@ class PriorityController extends ApiController
 
         $modelClass = $this->getModel();
 
-        if (!empty($validated['is_default'])) {
+        if (! empty($validated['is_default'])) {
             $modelClass::where('is_default', true)->update(['is_default' => false]);
         }
 
@@ -43,7 +42,6 @@ class PriorityController extends ApiController
 
         return $this->buildResponse($record->toArray(), $request, Response::HTTP_CREATED);
     }
-
 
     /**
      * Update the specified priority.
@@ -56,7 +54,7 @@ class PriorityController extends ApiController
 
         $record = $modelClass::find($id);
 
-        if (!$record) {
+        if (! $record) {
             return $this->buildResponse([
                 'error' => [
                     'message' => 'Record not found',
@@ -75,7 +73,7 @@ class PriorityController extends ApiController
             'is_default' => ['sometimes', 'boolean'],
         ]);
 
-        if (!empty($validated['is_default'])) {
+        if (! empty($validated['is_default'])) {
             $modelClass::where('is_default', true)
                 ->where('id', '!=', $record->id)
                 ->update(['is_default' => false]);
@@ -97,7 +95,7 @@ class PriorityController extends ApiController
 
         $record = $modelClass::find($id);
 
-        if (!$record) {
+        if (! $record) {
             return $this->buildResponse([
                 'error' => [
                     'message' => 'Record not found',

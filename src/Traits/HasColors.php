@@ -15,7 +15,7 @@ trait HasColors
     protected static function bootHasColors(): void
     {
         static::saving(function ($model) {
-            if ($model->color_background && !$model->color_foreground) {
+            if ($model->color_background && ! $model->color_foreground) {
                 $model->color_foreground = static::getContrastColor($model->color_background);
             }
         });

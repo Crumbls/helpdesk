@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TicketType extends Model implements TicketTypeContract
 {
-    use HasFactory, SoftDeletes, HasColors;
+    use HasColors, HasFactory, SoftDeletes;
 
     protected static function newFactory()
     {

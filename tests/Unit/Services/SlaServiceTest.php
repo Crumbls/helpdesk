@@ -8,7 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->slaService = new SlaService();
+    $this->slaService = new SlaService;
     config(['helpdesk.sla.business_hours.enabled' => false]);
 });
 

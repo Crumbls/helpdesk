@@ -31,7 +31,7 @@ class CommentReply extends Notification implements ShouldQueue
         $comment = $this->comment;
         $ticket = $comment->ticket;
 
-        return (new MailMessage())
+        return (new MailMessage)
             ->subject(__('helpdesk::notifications.comment_reply.subject', [
                 'id' => $ticket->id,
                 'title' => $ticket->title,

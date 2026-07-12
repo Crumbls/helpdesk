@@ -1,7 +1,7 @@
 <?php
 
-use Crumbls\HelpDesk\Events\TicketCreated;
 use Crumbls\HelpDesk\Events\CommentCreated;
+use Crumbls\HelpDesk\Events\TicketCreated;
 use Crumbls\HelpDesk\Listeners\DispatchWebhook;
 use Crumbls\HelpDesk\Models\Ticket;
 use Crumbls\HelpDesk\Models\TicketComment;
@@ -22,7 +22,7 @@ it('sends webhook on ticket created', function () {
 
     $ticket = Ticket::factory()->create(['submitter_id' => $submitter->id]);
 
-    $listener = new DispatchWebhook();
+    $listener = new DispatchWebhook;
     $listener->handle(new TicketCreated($ticket));
 
     Http::assertSent(function ($request) {
@@ -42,7 +42,7 @@ it('includes hmac signature when secret configured', function () {
 
     $ticket = Ticket::factory()->create(['submitter_id' => $submitter->id]);
 
-    $listener = new DispatchWebhook();
+    $listener = new DispatchWebhook;
     $listener->handle(new TicketCreated($ticket));
 
     Http::assertSent(function ($request) {
@@ -61,7 +61,7 @@ it('filters events based on webhook config', function () {
 
     $ticket = Ticket::factory()->create(['submitter_id' => $submitter->id]);
 
-    $listener = new DispatchWebhook();
+    $listener = new DispatchWebhook;
     $listener->handle(new TicketCreated($ticket));
 
     Http::assertNothingSent();
@@ -76,7 +76,7 @@ it('does nothing when no webhooks configured', function () {
 
     $ticket = Ticket::factory()->create(['submitter_id' => $submitter->id]);
 
-    $listener = new DispatchWebhook();
+    $listener = new DispatchWebhook;
     $listener->handle(new TicketCreated($ticket));
 
     Http::assertNothingSent();
@@ -97,7 +97,7 @@ it('sends webhook on comment created', function () {
         'user_id' => $submitter->id,
     ]);
 
-    $listener = new DispatchWebhook();
+    $listener = new DispatchWebhook;
     $listener->handle(new CommentCreated($comment));
 
     Http::assertSent(function ($request) {

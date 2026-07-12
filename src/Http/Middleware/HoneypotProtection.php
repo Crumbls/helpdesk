@@ -23,7 +23,7 @@ class HoneypotProtection
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (!config('helpdesk.honeypot.enabled', true)) {
+        if (! config('helpdesk.honeypot.enabled', true)) {
             return $next($request);
         }
 

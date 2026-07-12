@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Crumbls\HelpDesk\Http\Controllers;
 
 use Crumbls\HelpDesk\Models;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -24,7 +25,7 @@ class AttachmentController extends ApiController
      */
     public function store(Request $request): Response
     {
-        if (!config('helpdesk.attachments.enabled')) {
+        if (! config('helpdesk.attachments.enabled')) {
             return $this->buildResponse([
                 'error' => ['message' => 'Attachments are disabled', 'status' => 403],
             ], $request, Response::HTTP_FORBIDDEN);
@@ -37,8 +38,8 @@ class AttachmentController extends ApiController
             'file' => [
                 'required',
                 'file',
-                'max:' . $maxSizeKb,
-                'mimes:' . implode(',', $allowedMimes),
+                'max:'.$maxSizeKb,
+                'mimes:'.implode(',', $allowedMimes),
             ],
             'attachable_type' => ['required', 'string', 'in:ticket,comment'],
             'attachable_id' => ['required', 'integer'],
@@ -50,7 +51,7 @@ class AttachmentController extends ApiController
 
         $attachable = $attachableClass::find($validated['attachable_id']);
 
-        if (!$attachable) {
+        if (! $attachable) {
             return $this->buildResponse([
                 'error' => ['message' => 'Attachable record not found', 'status' => 404],
             ], $request, Response::HTTP_NOT_FOUND);
@@ -60,7 +61,7 @@ class AttachmentController extends ApiController
         $disk = config('helpdesk.attachments.disk', 'local');
         $path = config('helpdesk.attachments.path', 'helpdesk-attachments');
 
-        $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
+        $filename = Str::uuid().'.'.$file->getClientOriginalExtension();
         $filePath = $file->storeAs($path, $filename, $disk);
 
         $modelClass = $this->getModel();
@@ -89,13 +90,52 @@ class AttachmentController extends ApiController
         $modelClass = $this->getModel();
         $attachment = $modelClass::with(['attachable', 'user'])->find($id);
 
-        if (!$attachment) {
+        if (! $attachment) {
             return $this->buildResponse([
                 'error' => ['message' => 'Attachment not found', 'status' => 404],
             ], $request, Response::HTTP_NOT_FOUND);
         }
 
+        if (! $this->canAccessAttachment($request, $attachment)) {
+            return $this->buildResponse([
+                'error' => ['message' => 'Unauthorized', 'status' => 403],
+            ], $request, Response::HTTP_FORBIDDEN);
+        }
+
         return $this->buildResponse($attachment->toArray(), $request, Response::HTTP_OK);
+    }
+
+    /**
+     * Download an attachment file.
+     *
+     * GET /api/helpdesk/attachments/{id}/download
+     */
+    public function download(Request $request, string $id): mixed
+    {
+        $modelClass = $this->getModel();
+        $attachment = $modelClass::with('attachable')->find($id);
+
+        if (! $attachment) {
+            return $this->buildResponse([
+                'error' => ['message' => 'Attachment not found', 'status' => 404],
+            ], $request, Response::HTTP_NOT_FOUND);
+        }
+
+        if (! $this->canAccessAttachment($request, $attachment)) {
+            return $this->buildResponse([
+                'error' => ['message' => 'Unauthorized', 'status' => 403],
+            ], $request, Response::HTTP_FORBIDDEN);
+        }
+
+        $disk = Storage::disk($attachment->disk);
+
+        if (! $disk->exists($attachment->filename)) {
+            return $this->buildResponse([
+                'error' => ['message' => 'Attachment file not found', 'status' => 404],
+            ], $request, Response::HTTP_NOT_FOUND);
+        }
+
+        return $disk->download($attachment->filename, $attachment->original_filename);
     }
 
     /**
@@ -108,10 +148,16 @@ class AttachmentController extends ApiController
         $modelClass = $this->getModel();
         $attachment = $modelClass::find($id);
 
-        if (!$attachment) {
+        if (! $attachment) {
             return $this->buildResponse([
                 'error' => ['message' => 'Attachment not found', 'status' => 404],
             ], $request, Response::HTTP_NOT_FOUND);
+        }
+
+        if (! $this->canAccessAttachment($request, $attachment)) {
+            return $this->buildResponse([
+                'error' => ['message' => 'Unauthorized', 'status' => 403],
+            ], $request, Response::HTTP_FORBIDDEN);
         }
 
         // Delete file from storage.
@@ -122,5 +168,48 @@ class AttachmentController extends ApiController
         $attachment->delete();
 
         return $this->buildResponse(['message' => 'Attachment deleted'], $request, Response::HTTP_OK);
+    }
+
+    protected function canAccessAttachment(Request $request, Model $attachment): bool
+    {
+        $user = $request->user();
+
+        if (! $user) {
+            return false;
+        }
+
+        $attachable = $attachment->attachable;
+
+        if (! $attachable) {
+            return false;
+        }
+
+        $ticketClass = Models::ticket();
+        $commentClass = Models::comment();
+
+        if ($attachable instanceof $ticketClass) {
+            return $this->canAccessTicket($attachable, $user->id);
+        }
+
+        if ($attachable instanceof $commentClass) {
+            if ($attachable->is_private && (int) $attachable->user_id !== (int) $user->id) {
+                return $attachable->ticket?->assignees()->where('user_id', $user->id)->exists() ?? false;
+            }
+
+            return $this->canAccessTicket($attachable->ticket, $user->id);
+        }
+
+        return false;
+    }
+
+    protected function canAccessTicket(?Model $ticket, int|string $userId): bool
+    {
+        if (! $ticket) {
+            return false;
+        }
+
+        return (int) $ticket->submitter_id === (int) $userId
+            || $ticket->assignees()->where('user_id', $userId)->exists()
+            || $ticket->watchers()->where('user_id', $userId)->exists();
     }
 }

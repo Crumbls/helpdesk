@@ -14,7 +14,7 @@ class SendTicketStatusChangedNotifications implements ShouldQueue
     {
         $config = config('helpdesk.notifications', []);
 
-        if (!($config['submitter_status_changed'] ?? true)) {
+        if (! ($config['submitter_status_changed'] ?? true)) {
             return;
         }
 

@@ -34,7 +34,7 @@ class StatusController extends ApiController
 
         $modelClass = $this->getModel();
 
-        if (!empty($validated['is_default'])) {
+        if (! empty($validated['is_default'])) {
             $modelClass::where('is_default', true)->update(['is_default' => false]);
         }
 
@@ -42,7 +42,6 @@ class StatusController extends ApiController
 
         return $this->buildResponse($record->toArray(), $request, Response::HTTP_CREATED);
     }
-
 
     /**
      * Update the specified ticket status.
@@ -55,7 +54,7 @@ class StatusController extends ApiController
 
         $record = $modelClass::find($id);
 
-        if (!$record) {
+        if (! $record) {
             return $this->buildResponse([
                 'error' => [
                     'message' => 'Record not found',
@@ -74,7 +73,7 @@ class StatusController extends ApiController
             'is_closed' => ['sometimes', 'boolean'],
         ]);
 
-        if (!empty($validated['is_default'])) {
+        if (! empty($validated['is_default'])) {
             $modelClass::where('is_default', true)
                 ->where('id', '!=', $record->id)
                 ->update(['is_default' => false]);
@@ -96,7 +95,7 @@ class StatusController extends ApiController
 
         $record = $modelClass::find($id);
 
-        if (!$record) {
+        if (! $record) {
             return $this->buildResponse([
                 'error' => [
                     'message' => 'Record not found',

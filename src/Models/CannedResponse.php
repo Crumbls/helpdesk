@@ -6,11 +6,11 @@ namespace Crumbls\HelpDesk\Models;
 
 use Crumbls\HelpDesk\Contracts\Models\CannedResponseContract;
 use Crumbls\HelpDesk\Database\Factories\CannedResponseFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Builder;
 
 class CannedResponse extends Model implements CannedResponseContract
 {
@@ -51,7 +51,7 @@ class CannedResponse extends Model implements CannedResponseContract
     {
         return $query->where(function ($q) use ($departmentId) {
             $q->where('department_id', $departmentId)
-              ->orWhereNull('department_id');
+                ->orWhereNull('department_id');
         });
     }
 }

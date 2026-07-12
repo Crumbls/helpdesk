@@ -33,7 +33,7 @@ class TypeController extends ApiController
 
         $modelClass = $this->getModel();
 
-        if (!empty($validated['is_default'])) {
+        if (! empty($validated['is_default'])) {
             $modelClass::where('is_default', true)->update(['is_default' => false]);
         }
 
@@ -53,7 +53,7 @@ class TypeController extends ApiController
 
         $record = $modelClass::find($id);
 
-        if (!$record) {
+        if (! $record) {
             return $this->buildResponse([
                 'error' => [
                     'message' => 'Record not found',
@@ -71,7 +71,7 @@ class TypeController extends ApiController
             'is_default' => ['sometimes', 'boolean'],
         ]);
 
-        if (!empty($validated['is_default'])) {
+        if (! empty($validated['is_default'])) {
             $modelClass::where('is_default', true)
                 ->where('id', '!=', $record->id)
                 ->update(['is_default' => false]);
@@ -93,7 +93,7 @@ class TypeController extends ApiController
 
         $record = $modelClass::find($id);
 
-        if (!$record) {
+        if (! $record) {
             return $this->buildResponse([
                 'error' => [
                     'message' => 'Record not found',

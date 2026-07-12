@@ -27,7 +27,7 @@ class AdminNewTicket extends Notification implements ShouldQueue
     {
         $ticket = $this->ticket;
 
-        return (new MailMessage())
+        return (new MailMessage)
             ->subject(__('helpdesk::notifications.admin_new_ticket.subject', [
                 'id' => $ticket->id,
                 'title' => $ticket->title,
@@ -39,8 +39,8 @@ class AdminNewTicket extends Notification implements ShouldQueue
                 'email' => $ticket->submitter?->email ?? '',
             ]))
             ->line(__('helpdesk::notifications.admin_new_ticket.line2', [
-                'department' => $ticket->department?->name ?? 'Unassigned',
-                'priority' => $ticket->priority?->name ?? 'None',
+                'department' => $ticket->department?->title ?? 'Unassigned',
+                'priority' => $ticket->priority?->title ?? 'None',
                 'source' => $ticket->source ?? 'api',
             ]))
             ->line($ticket->description);

@@ -28,7 +28,7 @@ class AdminNewComment extends Notification implements ShouldQueue
         $comment = $this->comment;
         $ticket = $comment->ticket;
 
-        return (new MailMessage())
+        return (new MailMessage)
             ->subject(__('helpdesk::notifications.admin_new_comment.subject', [
                 'id' => $ticket->id,
                 'title' => $ticket->title,

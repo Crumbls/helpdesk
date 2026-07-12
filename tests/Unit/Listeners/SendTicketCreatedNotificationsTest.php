@@ -23,7 +23,7 @@ it('notifies admins and submitter on ticket created', function () {
 
     $ticket = Ticket::factory()->create(['submitter_id' => $submitter->id]);
 
-    $listener = new SendTicketCreatedNotifications();
+    $listener = new SendTicketCreatedNotifications;
     $listener->handle(new TicketCreated($ticket));
 
     Notification::assertSentTo($admin, AdminNewTicket::class);
@@ -42,7 +42,7 @@ it('skips admin notification when disabled', function () {
 
     $ticket = Ticket::factory()->create(['submitter_id' => $submitter->id]);
 
-    $listener = new SendTicketCreatedNotifications();
+    $listener = new SendTicketCreatedNotifications;
     $listener->handle(new TicketCreated($ticket));
 
     Notification::assertNotSentTo($admin, AdminNewTicket::class);
@@ -59,7 +59,7 @@ it('skips submitter confirmation when disabled', function () {
     config(['helpdesk.notifications.admin_new_ticket' => false]);
     config(['helpdesk.notifications.submitter_confirmation' => false]);
 
-    $listener = new SendTicketCreatedNotifications();
+    $listener = new SendTicketCreatedNotifications;
     $listener->handle(new TicketCreated($ticket));
 
     Notification::assertNothingSent();
@@ -78,7 +78,7 @@ it('resolves admins by email config', function () {
 
     $ticket = Ticket::factory()->create(['submitter_id' => $submitter->id]);
 
-    $listener = new SendTicketCreatedNotifications();
+    $listener = new SendTicketCreatedNotifications;
     $listener->handle(new TicketCreated($ticket));
 
     Notification::assertSentTo($admin, AdminNewTicket::class);

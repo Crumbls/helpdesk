@@ -1,15 +1,14 @@
 <?php
 
+use Crumbls\HelpDesk\Models\SatisfactionRating;
 use Crumbls\HelpDesk\Models\Ticket;
 use Crumbls\HelpDesk\Models\TicketStatus;
 use Crumbls\HelpDesk\Models\TicketType;
-use Crumbls\HelpDesk\Models\SatisfactionRating;
 use Crumbls\HelpDesk\Notifications\GuestLoginLink;
 use Crumbls\HelpDesk\Notifications\GuestTicketLookup;
 use Crumbls\HelpDesk\Tests\Fixtures\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 
@@ -19,6 +18,7 @@ function guestDeps(): array
 {
     $status = TicketStatus::factory()->default()->create();
     $type = TicketType::factory()->create();
+
     return compact('status', 'type');
 }
 

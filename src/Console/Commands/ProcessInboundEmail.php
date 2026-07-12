@@ -7,7 +7,6 @@ namespace Crumbls\HelpDesk\Console\Commands;
 use Crumbls\HelpDesk\Models;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
 
 class ProcessInboundEmail extends Command
 {
@@ -17,8 +16,9 @@ class ProcessInboundEmail extends Command
 
     public function handle(): int
     {
-        if (!config('helpdesk.inbound_email.enabled', false)) {
+        if (! config('helpdesk.inbound_email.enabled', false)) {
             $this->warn('Inbound email is disabled in config.');
+
             return Command::SUCCESS;
         }
 
@@ -26,31 +26,35 @@ class ProcessInboundEmail extends Command
 
         if ($provider !== 'maildir') {
             $this->error('Only maildir provider is supported via console. Use webhook for other providers.');
+
             return Command::FAILURE;
         }
 
         $maildir = config('helpdesk.inbound_email.maildir');
 
-        if (!File::exists($maildir)) {
+        if (! File::exists($maildir)) {
             $this->error("Maildir not found: {$maildir}");
+
             return Command::FAILURE;
         }
 
         // Process a single file if specified.
         if ($file = $this->option('file')) {
-            if (!File::exists($file)) {
+            if (! File::exists($file)) {
                 $this->error("File not found: {$file}");
+
                 return Command::FAILURE;
             }
 
             $this->processEmailFile($file);
+
             return Command::SUCCESS;
         }
 
         // Process all .eml files in maildir.
         $files = File::glob("{$maildir}/*.eml");
 
-        $this->info("Found " . count($files) . " email file(s) to process.");
+        $this->info('Found '.count($files).' email file(s) to process.');
 
         foreach ($files as $file) {
             $this->processEmailFile($file);
@@ -68,17 +72,18 @@ class ProcessInboundEmail extends Command
         // Parse email (basic parsing - in production you'd use a library like php-mime-mail-parser).
         $parsed = $this->parseEmail($content);
 
-        if (!$parsed) {
+        if (! $parsed) {
             $this->warn("Failed to parse email: {$filePath}");
+
             return;
         }
 
         $this->createTicketOrComment($parsed);
 
         // Move to processed directory.
-        $processedDir = dirname($filePath) . '/processed';
+        $processedDir = dirname($filePath).'/processed';
         File::ensureDirectoryExists($processedDir);
-        File::move($filePath, $processedDir . '/' . basename($filePath));
+        File::move($filePath, $processedDir.'/'.basename($filePath));
 
         $this->info("Processed and moved to: {$processedDir}");
     }
@@ -93,13 +98,14 @@ class ProcessInboundEmail extends Command
         $inBody = false;
 
         foreach ($lines as $line) {
-            if (!$inBody && trim($line) === '') {
+            if (! $inBody && trim($line) === '') {
                 $inBody = true;
+
                 continue;
             }
 
             if ($inBody) {
-                $body .= $line . "\n";
+                $body .= $line."\n";
             } else {
                 if (preg_match('/^([\w-]+):\s*(.*)$/', $line, $matches)) {
                     $headers[strtolower($matches[1])] = trim($matches[2]);
@@ -131,8 +137,9 @@ class ProcessInboundEmail extends Command
         // Find user by email.
         $user = $userClass::where('email', $parsed['from'])->first();
 
-        if (!$user) {
+        if (! $user) {
             $this->warn("User not found for email: {$parsed['from']}. Skipping.");
+
             return;
         }
 
@@ -151,6 +158,7 @@ class ProcessInboundEmail extends Command
                 ]);
 
                 $this->info("Added comment to ticket #{$ticketId}");
+
                 return;
             }
         }

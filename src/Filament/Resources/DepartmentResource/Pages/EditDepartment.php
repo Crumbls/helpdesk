@@ -2,9 +2,8 @@
 
 namespace Crumbls\HelpDesk\Filament\Resources\DepartmentResource\Pages;
 
-use Filament\Actions\DeleteAction;
 use Crumbls\HelpDesk\Filament\Resources\DepartmentResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditDepartment extends EditRecord

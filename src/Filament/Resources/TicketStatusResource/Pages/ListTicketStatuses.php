@@ -2,9 +2,8 @@
 
 namespace Crumbls\HelpDesk\Filament\Resources\TicketStatusResource\Pages;
 
-use Filament\Actions\CreateAction;
 use Crumbls\HelpDesk\Filament\Resources\TicketStatusResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListTicketStatuses extends ListRecords

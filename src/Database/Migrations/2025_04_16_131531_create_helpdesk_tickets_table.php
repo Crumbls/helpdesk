@@ -1,5 +1,6 @@
 <?php
 
+use Crumbls\HelpDesk\Support\UserForeignKey;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -15,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('ticket_type_id')->constrained('helpdesk_ticket_types')->cascadeOnDelete();
             $table->foreignId('ticket_status_id')->constrained('helpdesk_ticket_statuses')->cascadeOnDelete();
-            $table->foreignId('submitter_id')->constrained('users')->cascadeOnDelete();
+            UserForeignKey::add($table, 'submitter_id');
             $table->foreignId('department_id')->nullable()->constrained('helpdesk_departments')->nullOnDelete();
             $table->foreignId('priority_id')->nullable()->constrained('helpdesk_priorities')->nullOnDelete();
             $table->foreignId('parent_ticket_id')->nullable()->constrained('helpdesk_tickets')->nullOnDelete();

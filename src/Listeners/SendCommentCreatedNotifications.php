@@ -24,6 +24,7 @@ class SendCommentCreatedNotifications implements ShouldQueue
             if ($config['admin_new_comment'] ?? true) {
                 $this->notifyAdmins(new AdminNewComment($comment), $comment->user_id);
             }
+
             return;
         }
 

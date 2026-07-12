@@ -2,9 +2,8 @@
 
 namespace Crumbls\HelpDesk\Filament\Resources\TicketResource\Pages;
 
-use Filament\Actions\CreateAction;
 use Crumbls\HelpDesk\Filament\Resources\TicketResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListTickets extends ListRecords

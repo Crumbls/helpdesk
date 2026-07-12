@@ -31,7 +31,7 @@ class TicketAssignedNotification extends Notification implements ShouldQueue
     {
         $ticket = $this->ticket;
 
-        return (new MailMessage())
+        return (new MailMessage)
             ->subject(__('helpdesk::notifications.ticket_assigned.subject', [
                 'id' => $ticket->id,
                 'title' => $ticket->title,
@@ -44,8 +44,8 @@ class TicketAssignedNotification extends Notification implements ShouldQueue
                 'role' => $this->role,
             ]))
             ->line(__('helpdesk::notifications.ticket_assigned.line2', [
-                'priority' => $ticket->priority?->name ?? 'None',
-                'department' => $ticket->department?->name ?? 'Unassigned',
+                'priority' => $ticket->priority?->title ?? 'None',
+                'department' => $ticket->department?->title ?? 'Unassigned',
             ]));
     }
 

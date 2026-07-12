@@ -39,24 +39,27 @@
             "Crumbls\\HelpDesk\\Tests\\": "tests"
         }
     },
-  "scripts": {
-    "lint": "pint",
-    "refactor": "rector",
-    "test:type-coverage": "pest --type-coverage --exactly=100",
-    "test:typos": "peck",
-    "test:lint": "pint --test",
-    "test:unit": "pest --coverage --exactly=100",
-    "test:types": "phpstan",
-    "test:refactor": "rector --dry-run",
-    "test": [
-      "@test:lint",
-      "@test:type-coverage",
-      "@test:typos",
-      "@test:unit",
-      "@test:types",
-      "@test:refactor"
-    ]
-  },
+    "scripts": {
+        "lint": "pint",
+        "lint:dirty": "php scripts/pint-dirty.php",
+        "hooks:install": "sh scripts/install-pre-commit-hook.sh",
+        "refactor": "rector",
+        "test:type-coverage": "pest --type-coverage --exactly=100",
+        "test:typos": "peck",
+        "test:lint": "pint --test",
+        "test:lint:dirty": "php scripts/pint-dirty.php --test",
+        "test:unit": "pest --coverage --exactly=100",
+        "test:types": "phpstan",
+        "test:refactor": "rector --dry-run",
+        "test": [
+            "@test:lint",
+            "@test:type-coverage",
+            "@test:typos",
+            "@test:unit",
+            "@test:types",
+            "@test:refactor"
+        ]
+    },
     "config": {
       "sort-packages": true,
       "preferred-install": "dist",

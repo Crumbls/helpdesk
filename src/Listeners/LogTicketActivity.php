@@ -9,14 +9,14 @@ use Crumbls\HelpDesk\Events\SatisfactionRated;
 use Crumbls\HelpDesk\Events\TicketAssigned;
 use Crumbls\HelpDesk\Events\TicketCreated;
 use Crumbls\HelpDesk\Events\TicketStatusChanged;
-use Crumbls\HelpDesk\Models\ActivityLog;
 use Crumbls\HelpDesk\Models;
+use Crumbls\HelpDesk\Models\ActivityLog;
 
 class LogTicketActivity
 {
     public function handle(object $event): void
     {
-        if (!config('helpdesk.activity_log.enabled', true)) {
+        if (! config('helpdesk.activity_log.enabled', true)) {
             return;
         }
 
@@ -95,8 +95,8 @@ class LogTicketActivity
             ticketId: $comment->ticket_id,
             type: $comment->is_private ? 'internal_note' : 'commented',
             description: $comment->is_private
-                ? ($user?->name ?? 'Someone') . ' added an internal note'
-                : ($user?->name ?? 'Someone') . ' replied',
+                ? ($user?->name ?? 'Someone').' added an internal note'
+                : ($user?->name ?? 'Someone').' replied',
             userId: $comment->user_id,
             metadata: [
                 'comment_id' => $comment->id,

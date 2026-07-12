@@ -41,7 +41,7 @@ class CommentController extends ApiController
 
         $record = $modelClass::with('user')->find($id);
 
-        if (!$record) {
+        if (! $record) {
             return $this->buildResponse([
                 'error' => [
                     'message' => 'Record not found',
@@ -68,7 +68,7 @@ class CommentController extends ApiController
 
         $modelClass = $this->getModel();
 
-        if (!empty($validated['is_resolution'])) {
+        if (! empty($validated['is_resolution'])) {
             $modelClass::where('ticket_id', $validated['ticket_id'])
                 ->where('is_resolution', true)
                 ->update(['is_resolution' => false]);
@@ -88,7 +88,7 @@ class CommentController extends ApiController
 
         $record = $modelClass::find($id);
 
-        if (!$record) {
+        if (! $record) {
             return $this->buildResponse([
                 'error' => [
                     'message' => 'Record not found',
@@ -107,7 +107,7 @@ class CommentController extends ApiController
 
         $ticketId = $validated['ticket_id'] ?? $record->ticket_id;
 
-        if (!empty($validated['is_resolution'])) {
+        if (! empty($validated['is_resolution'])) {
             $modelClass::where('ticket_id', $ticketId)
                 ->where('is_resolution', true)
                 ->where('id', '!=', $record->id)
@@ -128,7 +128,7 @@ class CommentController extends ApiController
 
         $record = $modelClass::find($id);
 
-        if (!$record) {
+        if (! $record) {
             return $this->buildResponse([
                 'error' => [
                     'message' => 'Record not found',

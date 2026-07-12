@@ -42,6 +42,8 @@ class TicketComment extends Model implements TicketCommentContract
     protected static function booted(): void
     {
         static::created(function (TicketComment $comment) {
+            $comment->ticket?->touchActivity($comment->created_at ?? now());
+
             if (config('helpdesk.events.enabled') && config('helpdesk.events.dispatch.comment_created')) {
                 event(new CommentCreated($comment));
             }

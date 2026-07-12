@@ -2,8 +2,8 @@
 
 namespace Crumbls\HelpDesk\Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use Crumbls\HelpDesk\Models\Department;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class DepartmentFactory extends Factory
 {

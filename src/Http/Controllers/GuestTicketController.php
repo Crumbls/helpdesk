@@ -12,7 +12,6 @@ use Crumbls\HelpDesk\Notifications\SatisfactionRatingReceived;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
@@ -68,7 +67,7 @@ class GuestTicketController extends Controller
         $user = $userClass::where('email', $validated['email'])->first();
         $isNewUser = false;
 
-        if (!$user) {
+        if (! $user) {
             $user = $userClass::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
@@ -205,7 +204,7 @@ class GuestTicketController extends Controller
             ->with(['status', 'priority', 'department', 'publicComments.user'])
             ->first();
 
-        if (!$record) {
+        if (! $record) {
             return $this->buildResponse([
                 'error' => ['message' => 'Ticket not found', 'status' => 404],
             ], $request, Response::HTTP_NOT_FOUND);
@@ -232,7 +231,7 @@ class GuestTicketController extends Controller
             ->where('submitter_id', $user)
             ->first();
 
-        if (!$record) {
+        if (! $record) {
             return $this->buildResponse([
                 'error' => ['message' => 'Ticket not found', 'status' => 404],
             ], $request, Response::HTTP_NOT_FOUND);
@@ -265,7 +264,7 @@ class GuestTicketController extends Controller
             ->where('submitter_id', $user)
             ->first();
 
-        if (!$record) {
+        if (! $record) {
             return $this->buildResponse([
                 'error' => ['message' => 'Ticket not found', 'status' => 404],
             ], $request, Response::HTTP_NOT_FOUND);
@@ -300,7 +299,7 @@ class GuestTicketController extends Controller
             ->with('status')
             ->first();
 
-        if (!$record) {
+        if (! $record) {
             return $this->buildResponse([
                 'error' => ['message' => 'Ticket not found', 'status' => 404],
             ], $request, Response::HTTP_NOT_FOUND);
@@ -309,7 +308,7 @@ class GuestTicketController extends Controller
         // Check if ticket is closed.
         $isClosed = $record->closed_at !== null || ($record->status && $record->status->is_closed);
 
-        if (!$isClosed) {
+        if (! $isClosed) {
             return $this->buildResponse([
                 'error' => ['message' => 'Ticket must be closed before rating', 'status' => 422],
             ], $request, Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -355,7 +354,7 @@ class GuestTicketController extends Controller
      */
     public function attachFile(Request $request, int $ticket, int $user): Response
     {
-        if (!config('helpdesk.attachments.enabled')) {
+        if (! config('helpdesk.attachments.enabled')) {
             return $this->buildResponse([
                 'error' => ['message' => 'Attachments are disabled', 'status' => 403],
             ], $request, Response::HTTP_FORBIDDEN);
@@ -368,8 +367,8 @@ class GuestTicketController extends Controller
             'file' => [
                 'required',
                 'file',
-                'max:' . $maxSizeKb,
-                'mimes:' . implode(',', $allowedMimes),
+                'max:'.$maxSizeKb,
+                'mimes:'.implode(',', $allowedMimes),
             ],
         ]);
 
@@ -380,7 +379,7 @@ class GuestTicketController extends Controller
             ->where('submitter_id', $user)
             ->first();
 
-        if (!$record) {
+        if (! $record) {
             return $this->buildResponse([
                 'error' => ['message' => 'Ticket not found', 'status' => 404],
             ], $request, Response::HTTP_NOT_FOUND);
@@ -390,7 +389,7 @@ class GuestTicketController extends Controller
         $disk = config('helpdesk.attachments.disk', 'local');
         $path = config('helpdesk.attachments.path', 'helpdesk-attachments');
 
-        $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
+        $filename = Str::uuid().'.'.$file->getClientOriginalExtension();
         $filePath = $file->storeAs($path, $filename, $disk);
 
         $attachment = $attachmentClass::create([
@@ -418,7 +417,7 @@ class GuestTicketController extends Controller
      */
     public function login(Request $request, int $user): Response
     {
-        if (!$request->hasValidSignature()) {
+        if (! $request->hasValidSignature()) {
             abort(403, 'Invalid or expired login link.');
         }
 
@@ -442,11 +441,11 @@ class GuestTicketController extends Controller
 
         $admins = collect();
 
-        if (!empty($adminIds)) {
+        if (! empty($adminIds)) {
             $admins = $admins->merge($userClass::whereIn('id', $adminIds)->get());
         }
 
-        if (!empty($adminEmails)) {
+        if (! empty($adminEmails)) {
             $admins = $admins->merge($userClass::whereIn('email', $adminEmails)->get());
         }
 

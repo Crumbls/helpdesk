@@ -41,7 +41,7 @@ it('notifies the assigned agent', function () {
 
     config(['helpdesk.notifications.agent_ticket_assigned' => true]);
 
-    $listener = new SendTicketAssignedNotification();
+    $listener = new SendTicketAssignedNotification;
     $listener->handle(new TicketAssigned($ticket, $agent, 'assignee'));
 
     Notification::assertSentTo($agent, TicketAssignedNotification::class);
@@ -54,7 +54,7 @@ it('skips notification when config toggle is off', function () {
     Notification::fake();
     config(['helpdesk.notifications.agent_ticket_assigned' => false]);
 
-    $listener = new SendTicketAssignedNotification();
+    $listener = new SendTicketAssignedNotification;
     $listener->handle(new TicketAssigned($ticket, $agent, 'assignee'));
 
     Notification::assertNothingSent();

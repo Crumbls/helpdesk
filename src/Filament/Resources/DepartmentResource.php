@@ -4,55 +4,52 @@ declare(strict_types=1);
 
 namespace Crumbls\HelpDesk\Filament\Resources;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
-use Filament\Schemas\Components\Grid;
+use Crumbls\HelpDesk\Filament\Resources\DepartmentResource\Pages\CreateDepartment;
+use Crumbls\HelpDesk\Filament\Resources\DepartmentResource\Pages\EditDepartment;
+use Crumbls\HelpDesk\Filament\Resources\DepartmentResource\Pages\ListDepartments;
+use Crumbls\HelpDesk\Models;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\ColorPicker;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\TernaryFilter;
-use Filament\Actions\EditAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Crumbls\HelpDesk\Filament\Resources\DepartmentResource\Pages\ListDepartments;
-use Crumbls\HelpDesk\Filament\Resources\DepartmentResource\Pages\CreateDepartment;
-use Crumbls\HelpDesk\Filament\Resources\DepartmentResource\Pages\EditDepartment;
-use Crumbls\HelpDesk\Models;
-use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
-use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\HtmlString;
 
 class DepartmentResource extends Resource
 {
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-building-office';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-office';
 
-	public static function getModelLabel(): string
-	{
-		return __('helpdesk::departments.label');
-	}
+    public static function getModelLabel(): string
+    {
+        return __('helpdesk::departments.label');
+    }
 
-	public static function getPluralModelLabel(): string
-	{
-		return __('helpdesk::departments.plural');
-	}
+    public static function getPluralModelLabel(): string
+    {
+        return __('helpdesk::departments.plural');
+    }
 
-	public static function getNavigationGroup(): ?string
-	{
-		return __(config('helpdesk.filament.settings_navigation_group', 'Helpdesk Settings'));
-	}
+    public static function getNavigationGroup(): ?string
+    {
+        return __(config('helpdesk.filament.settings_navigation_group', 'Helpdesk Settings'));
+    }
 
-	public static function getNavigationSort(): ?int
-	{
-		return config('helpdesk.filament.resources.department.sort', TicketResource::getNavigationSort() + 5);
-	}
+    public static function getNavigationSort(): ?int
+    {
+        return config('helpdesk.filament.resources.department.sort', TicketResource::getNavigationSort() + 5);
+    }
 
-	public static function getModel(): string
+    public static function getModel(): string
     {
         return Models::department();
     }
@@ -94,7 +91,7 @@ class DepartmentResource extends Resource
             ->columns([
                 TextColumn::make('title')
                     ->formatStateUsing(fn ($record) => new HtmlString(
-                        '<span style="background-color: ' . e($record->background_color) . '; color: ' . e($record->foreground_color) . '; padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.75rem;">' . e($record->title) . '</span>'
+                        '<span style="background-color: '.e($record->background_color).'; color: '.e($record->foreground_color).'; padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.75rem;">'.e($record->title).'</span>'
                     ))
                     ->html()
                     ->searchable()

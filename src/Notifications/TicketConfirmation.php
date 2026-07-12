@@ -32,7 +32,7 @@ class TicketConfirmation extends Notification implements ShouldQueue
         $ticket = $this->ticket;
         $responseHours = $this->estimatedResponseHours();
 
-        $mail = (new MailMessage())
+        $mail = (new MailMessage)
             ->subject(__('helpdesk::notifications.ticket_confirmation.subject', [
                 'id' => $ticket->reference ?? $ticket->id,
             ]))

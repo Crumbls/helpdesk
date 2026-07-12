@@ -2,10 +2,9 @@
 
 use Crumbls\HelpDesk\Models\Ticket;
 use Crumbls\HelpDesk\Models\TicketComment;
-use Crumbls\HelpDesk\Models\SatisfactionRating;
-use Crumbls\HelpDesk\Notifications\AdminNewTicket;
+use Crumbls\HelpDesk\Models\TicketStatus;
 use Crumbls\HelpDesk\Notifications\AdminNewComment;
-use Crumbls\HelpDesk\Notifications\CommentReply;
+use Crumbls\HelpDesk\Notifications\AdminNewTicket;
 use Crumbls\HelpDesk\Notifications\GuestLoginLink;
 use Crumbls\HelpDesk\Notifications\GuestTicketLookup;
 use Crumbls\HelpDesk\Notifications\TicketAssignedNotification;
@@ -87,4 +86,22 @@ it('TicketStatusUpdated sends via mail', function () {
     $notification = new TicketStatusUpdated($ticket, 1, 2);
 
     expect($notification->via($submitter))->toBe(['mail']);
+});
+
+it('uses title fields for status update notification text', function () {
+    $submitter = User::create(['name' => 'Sub', 'email' => 'status-title@test.com']);
+    $oldStatus = TicketStatus::factory()->create(['title' => 'Waiting']);
+    $newStatus = TicketStatus::factory()->create(['title' => 'Resolved']);
+    $ticket = Ticket::factory()->create([
+        'submitter_id' => $submitter->id,
+        'ticket_status_id' => $newStatus->id,
+        'title' => 'Status display',
+    ]);
+
+    $notification = new TicketStatusUpdated($ticket, $oldStatus->id, $newStatus->id);
+    $mail = $notification->toMail($submitter);
+
+    expect($mail->subject)->toContain('Resolved')
+        ->and(implode("\n", $mail->introLines))->toContain('Waiting')
+        ->and(implode("\n", $mail->introLines))->toContain('Resolved');
 });

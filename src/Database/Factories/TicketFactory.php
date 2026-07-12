@@ -5,7 +5,6 @@ namespace Crumbls\HelpDesk\Database\Factories;
 use Crumbls\HelpDesk\Models\Department;
 use Crumbls\HelpDesk\Models\Priority;
 use Crumbls\HelpDesk\Models\Ticket;
-use Crumbls\HelpDesk\Models\TicketComment;
 use Crumbls\HelpDesk\Models\TicketStatus;
 use Crumbls\HelpDesk\Models\TicketType;
 use Illuminate\Database\Eloquent\Factories\Factory;

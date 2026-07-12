@@ -52,9 +52,9 @@ class SendTicketCreatedNotifications implements ShouldQueue
         $adminEmails = (array) config('helpdesk.notifications.admin_emails', []);
         if ($adminEmails) {
             $byEmail = $userClass::whereIn('email', $adminEmails)->get()->all();
-            $existingIds = array_map(fn($r) => $r->id, $recipients);
+            $existingIds = array_map(fn ($r) => $r->id, $recipients);
             foreach ($byEmail as $user) {
-                if (!in_array($user->id, $existingIds)) {
+                if (! in_array($user->id, $existingIds)) {
                     $recipients[] = $user;
                 }
             }

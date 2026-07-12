@@ -2,9 +2,8 @@
 
 namespace Crumbls\HelpDesk\Filament\Resources\DepartmentResource\Pages;
 
-use Filament\Actions\CreateAction;
 use Crumbls\HelpDesk\Filament\Resources\DepartmentResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListDepartments extends ListRecords

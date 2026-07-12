@@ -19,7 +19,7 @@ class InboundEmailController extends Controller
      */
     public function handle(Request $request): Response
     {
-        if (!config('helpdesk.inbound_email.enabled', false)) {
+        if (! config('helpdesk.inbound_email.enabled', false)) {
             return $this->buildResponse([
                 'error' => ['message' => 'Inbound email is disabled', 'status' => 403],
             ], $request, Response::HTTP_FORBIDDEN);
@@ -29,7 +29,7 @@ class InboundEmailController extends Controller
 
         // Validate webhook signature if secret is configured.
         if ($secret = config('helpdesk.inbound_email.webhook_secret')) {
-            if (!$this->validateWebhookSignature($request, $provider, $secret)) {
+            if (! $this->validateWebhookSignature($request, $provider, $secret)) {
                 return $this->buildResponse([
                     'error' => ['message' => 'Invalid webhook signature', 'status' => 403],
                 ], $request, Response::HTTP_FORBIDDEN);
@@ -44,7 +44,7 @@ class InboundEmailController extends Controller
             default => null,
         };
 
-        if (!$parsed) {
+        if (! $parsed) {
             return $this->buildResponse([
                 'error' => ['message' => 'Failed to parse email', 'status' => 422],
             ], $request, Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -73,11 +73,11 @@ class InboundEmailController extends Controller
         $timestamp = $request->input('timestamp');
         $token = $request->input('token');
 
-        if (!$signature || !$timestamp || !$token) {
+        if (! $signature || ! $timestamp || ! $token) {
             return false;
         }
 
-        $expected = hash_hmac('sha256', $timestamp . $token, $secret);
+        $expected = hash_hmac('sha256', $timestamp.$token, $secret);
 
         return hash_equals($expected, $signature);
     }
@@ -88,7 +88,7 @@ class InboundEmailController extends Controller
         $subject = $request->input('subject');
         $text = $request->input('text');
 
-        if (!$from || !$subject) {
+        if (! $from || ! $subject) {
             return null;
         }
 
@@ -105,7 +105,7 @@ class InboundEmailController extends Controller
         $subject = $request->input('subject');
         $text = $request->input('body-plain');
 
-        if (!$from || !$subject) {
+        if (! $from || ! $subject) {
             return null;
         }
 
@@ -122,7 +122,7 @@ class InboundEmailController extends Controller
         $subject = $request->input('Subject');
         $text = $request->input('TextBody');
 
-        if (!$from || !$subject) {
+        if (! $from || ! $subject) {
             return null;
         }
 
@@ -146,7 +146,7 @@ class InboundEmailController extends Controller
         // Find or create user.
         $user = $userClass::where('email', $fromEmail)->first();
 
-        if (!$user) {
+        if (! $user) {
             // Extract name from email.
             $name = explode('@', $fromEmail)[0];
             $name = ucwords(str_replace(['.', '_', '-'], ' ', $name));

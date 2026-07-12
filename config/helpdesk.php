@@ -12,10 +12,15 @@ return [
         'enabled' => true,
         'route-prefix' => 'api/helpdesk',
         'middleware' => [
-            'web'
+            'web',
+            'auth',
         ],
 
         'department' => [
+            'policy' => null,
+        ],
+
+        'custom_field' => [
             'policy' => null,
         ],
 
@@ -48,12 +53,35 @@ return [
         'status' => \Crumbls\HelpDesk\Models\TicketStatus::class,
         'ticket' => \Crumbls\HelpDesk\Models\Ticket::class,
         'ticket_assignment' => \Crumbls\HelpDesk\Models\TicketAssignment::class,
+        'ticket_read' => \Crumbls\HelpDesk\Models\TicketRead::class,
         'type' => \Crumbls\HelpDesk\Models\TicketType::class,
         'user' => null, // null = auto-detect from auth config, or specify a custom User model
         'satisfaction_rating' => \Crumbls\HelpDesk\Models\SatisfactionRating::class,
         'canned_response' => \Crumbls\HelpDesk\Models\CannedResponse::class,
         'attachment' => \Crumbls\HelpDesk\Models\Attachment::class,
         'activity_log' => \Crumbls\HelpDesk\Models\ActivityLog::class,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | User Foreign Keys
+    |--------------------------------------------------------------------------
+    |
+    | By default, migrations infer the configured user model key type. Override
+    | these values when your user table uses a custom string/char key.
+    |
+    */
+    'user_keys' => [
+        'table' => null,
+        'key' => null,
+        'column' => [
+            'type' => null, // int, bigint, uuid, ulid, string, char
+            'length' => null,
+            'collation' => null,
+        ],
+        'columns' => [
+            // 'submitter_id' => ['type' => 'char', 'length' => 21],
+        ],
     ],
 
     /*

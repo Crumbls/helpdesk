@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Priority extends Model implements PriorityContract
 {
-    use HasFactory, SoftDeletes, HasColors;
+    use HasColors, HasFactory, SoftDeletes;
 
     protected $table = 'helpdesk_priorities';
 
