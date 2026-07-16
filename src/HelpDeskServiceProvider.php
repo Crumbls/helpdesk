@@ -30,7 +30,11 @@ class HelpDeskServiceProvider extends ServiceProvider
     {
         $this->loadMigrationsFrom(__DIR__.'/Database/Migrations');
 
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'helpdesk');
+        $viewsPath = __DIR__.'/../resources/views';
+
+        if (is_dir($viewsPath)) {
+            $this->loadViewsFrom($viewsPath, 'helpdesk');
+        }
 
         $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'helpdesk');
 
@@ -46,9 +50,11 @@ class HelpDeskServiceProvider extends ServiceProvider
             __DIR__.'/Database/Migrations/' => database_path('migrations'),
         ], 'helpdesk-migrations');
 
-        $this->publishes([
-            __DIR__.'/../resources/views' => resource_path('views/vendor/helpdesk'),
-        ], 'helpdesk-views');
+        if (is_dir($viewsPath)) {
+            $this->publishes([
+                $viewsPath => resource_path('views/vendor/helpdesk'),
+            ], 'helpdesk-views');
+        }
 
         $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
 
