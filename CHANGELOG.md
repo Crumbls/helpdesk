@@ -10,6 +10,9 @@ All notable changes to `HelpDesk` will be documented in this file.
 
 ### Added
 
+- Added a GitHub Actions compatibility matrix for Laravel 9 through 13.
+- Added Dependabot updates for GitHub Actions dependencies.
+- Added a security policy with a private vulnerability reporting process.
 - Added secure API defaults with `web` and `auth` middleware.
 - Added department-agent membership through `helpdesk_department_user`.
 - Added protected attachment metadata and download endpoints.
@@ -22,6 +25,7 @@ All notable changes to `HelpDesk` will be documented in this file.
 
 ### Changed
 
+- Package distribution now excludes development-only files, and the library no longer commits `composer.lock`.
 - API, guest, and inbound email routes are independently configurable.
 - Activity log and webhook listeners no longer depend on notification listener config.
 - Ticket references are generated from the persisted ticket ID.
@@ -29,6 +33,8 @@ All notable changes to `HelpDesk` will be documented in this file.
 
 ### Fixed
 
+- Fixed configured user model resolution on Laravel 9.
+- Fixed webhook delivery when the host application uses Laravel 9 without Guzzle installed.
 - Fixed nullable system comments for stale-ticket auto-close.
 - Fixed notification text that referenced `name` fields on status, priority, and department models that expose `title`.
 

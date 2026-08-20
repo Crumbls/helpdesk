@@ -68,18 +68,16 @@ class Models
 
     public static function user(): string
     {
-        return (string) once(function () {
-            $configured = config('helpdesk.models.user');
+        $configured = config('helpdesk.models.user');
 
-            if ($configured !== null) {
-                return $configured;
-            }
+        if ($configured !== null) {
+            return (string) $configured;
+        }
 
-            $guard = config('auth.defaults.guard');
-            $provider = config("auth.guards.$guard.provider");
+        $guard = config('auth.defaults.guard');
+        $provider = config("auth.guards.$guard.provider");
 
-            return config("auth.providers.$provider.model", User::class);
-        });
+        return (string) config("auth.providers.$provider.model", User::class);
     }
 
     public static function satisfactionRating(): string

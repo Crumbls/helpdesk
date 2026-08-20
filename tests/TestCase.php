@@ -27,6 +27,8 @@ abstract class TestCase extends BaseTestCase
             'prefix' => '',
         ]);
 
+        $app['config']->set('mail.default', 'array');
+
         $app['config']->set('helpdesk.api.enabled', true);
         $app['config']->set('helpdesk.api.middleware', ['web']);
 
